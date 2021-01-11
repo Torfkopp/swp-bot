@@ -32,7 +32,7 @@ type Request struct {
 }
 
 type Reviewer struct {
-	User     []User `json:"user"`
+	User     User   `json:"user"`
 	Approved bool   `json:"approved"`
 	Status   string `json:"status"`
 }

@@ -7,19 +7,18 @@ import (
 
 func main() {
 
-	t1 := os.Getenv("discord_token") // Bot
-	t2 := os.Getenv("bitbucket_token") // Bitbucket
-	url := os.Getenv("url") // Endpoint URL
-	
+	bt := os.Getenv("BITBUCKET_TOKEN") // Bitbucket
+	dt := os.Getenv("DISCORD_TOKEN")   // Bot
+	url := os.Getenv("REST_URL")       // Endpoint URL
+
 	// Create API access first
-	api, err := NewAPI(url, t2)
+	api, err := NewAPI(url, bt)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Create BOT second
-	swpbot := SessionCreate(t1)
-
+	swpbot := SessionCreate(dt)
 
 	StartBot(api, swpbot)
 }
