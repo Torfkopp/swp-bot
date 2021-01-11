@@ -46,7 +46,7 @@ func Ready(s *discordgo.Session, event *discordgo.Ready) {
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if m.Content == "!reviewers" {
-		s.ChannelMessageSend(m.ChannelID, GetReviewers()) // TODO: Implement Me
+		s.ChannelMessageSend(m.ChannelID, GetReviewers()) // TODO: Get the used API into this handler
 	}
 
 	// Just for testing purpose

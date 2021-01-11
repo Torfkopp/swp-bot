@@ -34,6 +34,26 @@ func NewAPI(location string, token string) (*API, error) {
 	return a, nil
 }
 
+func GetReviewers(a *API) string {
+	var ret string
+
+	req, err := a.GetReviewerRequest()
+	if err == nil {
+		if len(req.Reviewer) == 0 {
+			ret = "No Reviewers assigned!"
+		} else {
+			for _, User := range req.Reviewer {
+				ret = ret + User.User.Username + ""
+			}
+		}
+	} else {
+		ret = "Request returned no data!"
+		panic(err)
+	}
+
+	return ret
+}
+
 // DebugFlag is the global debugging variable
 var DebugFlag = false
 
