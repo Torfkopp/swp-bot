@@ -18,7 +18,6 @@ func SessionCreate(tok string) *discordgo.Session {
 	return bot
 }
 
-// This function needs improvement, like a lot
 func StartBot(a *API, bot *discordgo.Session) {
 	// Register events
 	bot.AddHandler(Ready)
@@ -56,7 +55,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// This case is for testing API access only
 	if m.Content == "!reviewers" {
-		//	s.ChannelMessageSend(m.ChannelID, GetReviewers(a)) // TODO: Get the used API into this handler
+		s.ChannelMessageSend(m.ChannelID, GetReviewers(api))
 	}
 
 	// Just for testing purpose
