@@ -45,8 +45,18 @@ func Ready(s *discordgo.Session, event *discordgo.Ready) {
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
+	if m.Content == "!help" {
+		s.ChannelMessageSend(m.ChannelID,
+			"These are the supported interactive commands:\n"+
+				"!mypullreqs: Shows the status of your own active pull requests. (TODO)\n"+
+				"!allpullreqs: Shows the status of all active pull requests. (TODO)\n"+
+				"!reviewing: Shows all pull requests which you're a reviewer of. (TODO)\n"+
+				"!comments: Shows the comments under your active pull requests. (TODO)")
+	}
+
+	// This case is for testing API access only
 	if m.Content == "!reviewers" {
-		s.ChannelMessageSend(m.ChannelID, GetReviewers()) // TODO: Get the used API into this handler
+		//	s.ChannelMessageSend(m.ChannelID, GetReviewers(a)) // TODO: Get the used API into this handler
 	}
 
 	// Just for testing purpose
