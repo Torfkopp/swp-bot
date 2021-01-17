@@ -34,16 +34,16 @@ func NewAPI(location string, token string) (*API, error) {
 	return a, nil
 }
 
-func GetReviewers(a *API) string {
+func GetPullRequests(a *API) string {
 	var ret string
 
-	req, err := a.GetReviewerRequest()
+	req, err := a.GetPullRequestsRequest()
 	if err == nil {
-		if len(req.Reviewer) == 0 {
-			ret = "No Reviewers assigned!"
+		if len(req.Values) == 0 {
+			ret = "No active pull requests!"
 		} else {
-			for _, User := range req.Reviewer {
-				ret = ret + User.User.Username + ""
+			for _, value := range req.Values {
+				ret = ret + value.Title + ""
 			}
 		}
 	} else {

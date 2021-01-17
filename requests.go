@@ -62,7 +62,7 @@ func (a *API) Request(req *http.Request) ([]byte, error) {
 }
 
 // GetReviewerRequest sends reviewer related requests
-func (a *API) GetReviewerRequest() (*Reviewers, error) {
+func (a *API) GetPullRequestsRequest() (*Response, error) {
 
 	req, err := http.NewRequest("GET", a.endPoint.String(), nil)
 	if err != nil {
@@ -74,12 +74,12 @@ func (a *API) GetReviewerRequest() (*Reviewers, error) {
 		return nil, err
 	}
 
-	var reviewers Reviewers
+	var rev Response
 
-	err = json.Unmarshal(res, &reviewers)
+	err = json.Unmarshal(res, &rev)
 	if err != nil {
 		return nil, err
 	}
 
-	return &reviewers, nil
+	return &rev, nil
 }
