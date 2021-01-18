@@ -48,13 +48,6 @@ func (a *API) Auth(req *http.Request) {
 	}
 }
 
-// TODO Implement me
-func ListenForNewRequests(a *API) string {
-	ret := ">>> "
-
-	return ret
-}
-
 // ReadLUT reads the provided look up table and turns it into a map
 func ReadLUT() map[string]string {
 	file, err := os.Open(UserLUT)
@@ -71,6 +64,13 @@ func ReadLUT() map[string]string {
 	}
 
 	return lut
+}
+
+// TODO Implement me
+func ListenForNewRequests(a *API) string {
+	ret := ">>> "
+
+	return ret
 }
 
 // GetAllPullRequests returns all currently active pull requests from the rest response

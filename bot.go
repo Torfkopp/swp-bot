@@ -49,23 +49,20 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	case "!help":
 		s.ChannelMessageSend(m.ChannelID,
 			">>> __These are the supported interactive commands:__\n"+
-				"**!allpullreqs:** Shows the status of all active pull requests.\n"+
-				"**!mypullreqs:** Shows the status of your own active pull requests.\n"+
+				"**!allpullrequests:** Shows the status of all active pull requests.\n"+
+				"**!mypullrequests:** Shows the status of your own active pull requests.\n"+
 				"**!myreviews:** Shows all pull requests which you're a reviewer of.\n"+
 				"**!comments:** Shows the comments under your active pull requests. *(TODO)*")
-	case "!allpullreqs":
+	case "!allpullrequests":
 		s.ChannelMessageSend(m.ChannelID, GetAllPullRequests(api))
-	case "!mypullreqs":
+	case "!mypullrequests":
 		s.ChannelMessageSend(m.ChannelID, GetMyPullRequests(api, m.Author.ID))
 	case "!myreviews":
 		s.ChannelMessageSend(m.ChannelID, GetMyReviews(api, m.Author.ID))
 	case "!comments":
 		s.ChannelMessageSend(m.ChannelID, "*Not implemented yet*")
-	}
-
-	// Just for testing purpose
-	if m.Content == "!ping" {
-		s.ChannelMessageSend(m.ChannelID, "pong")
+	default:
+		return
 	}
 
 }
