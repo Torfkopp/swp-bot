@@ -1,10 +1,20 @@
 package main
 
 import (
+	"flag"
 	"os"
 )
 
-var api *API
+var (
+	api     *API
+	UserLUT string
+)
+
+func init() {
+	flag.StringVar(&UserLUT, "u", "", "File containing the UserLUT")
+	flag.BoolVar(&DebugFlag, "d", false, "Run Bot in foreground and enable debugging output")
+	flag.Parse()
+}
 
 func main() {
 

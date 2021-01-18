@@ -4,8 +4,10 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/bwmarrin/discordgo"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -34,21 +36,61 @@ func NewAPI(location string, token string) (*API, error) {
 	return a, nil
 }
 
-func GetPullRequests(a *API) string {
-	var ret string
+// TODO Implement me
+func ListenForNewRequests(a *API) string {
+	ret := ">>> "
+
+	return ret
+}
+
+func GetAllPullRequests(a *API) string {
+	ret := ">>> "
 
 	req, err := a.GetPullRequestsRequest()
 	if err == nil {
 		if len(req.Values) == 0 {
-			ret = "No active pull requests!"
+			ret = ret + "**No active pull requests!**"
 		} else {
-			for _, value := range req.Values {
-				ret = ret + value.Title + ""
+			for i, val := range req.Values {
+				ret = ret + "**" + strconv.Itoa(i+1) + ". " + val.Title + "**" + "\n*Reviewers:*\n"
+				for j, rev := range val.Reviewers {
+					ret = ret + strconv.Itoa(j+1) + ". " + rev.User.DisplayName + "\n"
+				}
 			}
 		}
 	} else {
-		ret = "Request returned no data!"
-		panic(err)
+		ret = ret + "**Request returned no data!**"
+		fmt.Println(err)
+	}
+
+	return ret
+}
+
+// TODO This doesn't work yet
+func FormatMessage(a *API) *discordgo.MessageEmbed {
+	var ret *discordgo.MessageEmbed
+
+	ret.Color = 5
+
+	req, err := a.GetPullRequestsRequest()
+	if err == nil {
+		if len(req.Values) == 0 {
+			ret.Fields[0].Value = "No active pull requests!"
+		} else {
+			for i, val := range req.Values {
+				ret.Fields[i].Name = "Pull-Request:"
+				ret.Fields[i].Value = req.Values[i].Title
+				ret.Fields[i+1].Name = "Reviewers:"
+				for _, rev := range val.Reviewers {
+					ret.Fields[i+1].Value = rev.User.DisplayName
+					i++
+				}
+				i++
+			}
+		}
+	} else {
+		ret.Fields[0].Value = "Request returned no data!"
+		fmt.Println(err)
 	}
 
 	return ret

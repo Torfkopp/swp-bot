@@ -30,8 +30,8 @@ type Values struct {
 	Description string     `json:"description"`
 	Reviewers   []Reviewer `json:"reviewers"`
 	Title       string     `json:"title"`
-	//Links       []Links    `json:"links"`
-	ID int `json:"id"`
+	Links       Links      `json:"links"`
+	ID          int        `json:"id"`
 }
 
 // Author defines author information
@@ -52,11 +52,14 @@ type User struct {
 	Name        string `json:"name"`
 	Mail        string `json:"emailAddress"`
 	DisplayName string `json:"displayName"`
-	//Links       []Links `json:"links"`
+	Links       Links  `json:"links"`
 }
 
-// TODO This struct is probably incorrect as in includes an array inside the array
 // Links defines hyperlink information
 type Links struct {
-	Self []string `json:"self"`
+	Self []Self `json:"self"`
+}
+
+type Self struct {
+	Href string `json:"href"`
 }
