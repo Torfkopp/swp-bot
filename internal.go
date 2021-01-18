@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -34,7 +35,7 @@ func NewAPI(location string, token string) (*API, error) {
 	return a, nil
 }
 
-func GetPullRequests(a *API) string {
+func GetAllPullRequests(a *API) string {
 	var ret string
 
 	req, err := a.GetPullRequestsRequest()
@@ -42,8 +43,11 @@ func GetPullRequests(a *API) string {
 		if len(req.Values) == 0 {
 			ret = "No active pull requests!"
 		} else {
-			for _, value := range req.Values {
-				ret = ret + value.Title + ""
+			for i, val := range req.Values {
+				ret = ret + strconv.Itoa(i+1) + ". " + val.Title + "\nReviewers:\n"
+				for j, rev := range val.Reviewers {
+					ret = ret + strconv.Itoa(j+1) + ". " + rev.User.DisplayName + "\n"
+				}
 			}
 		}
 	} else {

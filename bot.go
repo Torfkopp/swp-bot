@@ -38,24 +38,28 @@ func StartBot(a *API, bot *discordgo.Session) {
 	bot.Close()
 }
 
-func Ready(s *discordgo.Session, event *discordgo.Ready) {
+func Ready(s *discordgo.Session, _ *discordgo.Ready) {
 	s.UpdateStatus(0, "Catan")
 }
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
-	if m.Content == "!help" {
+	switch m.Content {
+	case "!help":
 		s.ChannelMessageSend(m.ChannelID,
 			"These are the supported interactive commands:\n"+
 				"!mypullreqs: Shows the status of your own active pull requests. (TODO)\n"+
 				"!allpullreqs: Shows the status of all active pull requests.\n"+
 				"!reviewing: Shows all pull requests which you're a reviewer of. (TODO)\n"+
 				"!comments: Shows the comments under your active pull requests. (TODO)")
-	}
-
-	// This case is for testing API access only
-	if m.Content == "!allpullreqs" {
-		s.ChannelMessageSend(m.ChannelID, GetPullRequests(api))
+	case "!allpullreqs":
+		s.ChannelMessageSend(m.ChannelID, GetAllPullRequests(api))
+	case "!mypullreqs":
+		s.ChannelMessageSend(m.ChannelID, "Not implemented yet")
+	case "!reviewing":
+		s.ChannelMessageSend(m.ChannelID, "Not implemented yet")
+	case "!comments":
+		s.ChannelMessageSend(m.ChannelID, "Not implemented yet")
 	}
 
 	// Just for testing purpose
