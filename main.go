@@ -11,7 +11,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&UserLUT, "u", "", "File containing the UserLUT")
+	flag.StringVar(&UserLUT, "u", "/home/user/swp_users.lut", "File containing the UserLUT")
 	flag.BoolVar(&DebugFlag, "d", false, "Run Bot in foreground and enable debugging output")
 	flag.Parse()
 }

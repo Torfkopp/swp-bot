@@ -2,11 +2,14 @@ package main
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"time"
 )
@@ -36,6 +39,15 @@ func NewAPI(location string, token string) (*API, error) {
 	return a, nil
 }
 
+// Auth implements token auth
+func (a *API) Auth(req *http.Request) {
+	// Supports unauthenticated access as well:
+	// If token is not set, no authorization header is added
+	if a.token != "" {
+		req.Header.Set("Authorization", "Bearer "+a.token)
+	}
+}
+
 // TODO Implement me
 func ListenForNewRequests(a *API) string {
 	ret := ">>> "
@@ -43,19 +55,75 @@ func ListenForNewRequests(a *API) string {
 	return ret
 }
 
+// ReadLUT reads the provided look up table and turns it into a map
+func ReadLUT() map[string]string {
+	file, err := os.Open(UserLUT)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer file.Close()
+
+	var lut map[string]string
+	err = json.NewDecoder(file).Decode(&lut)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return lut
+}
+
+// GetAllPullRequests returns all currently active pull requests from the rest response
 func GetAllPullRequests(a *API) string {
 	ret := ">>> "
+	lut := ReadLUT()
 
 	req, err := a.GetPullRequestsRequest()
 	if err == nil {
 		if len(req.Values) == 0 {
-			ret = ret + "**No active pull requests!**"
+			ret = ret + "**There are no active pull requests!**"
 		} else {
 			for i, val := range req.Values {
 				ret = ret + "**" + strconv.Itoa(i+1) + ". " + val.Title + "**" + "\n*Reviewers:*\n"
 				for j, rev := range val.Reviewers {
-					ret = ret + strconv.Itoa(j+1) + ". " + rev.User.DisplayName + "\n"
+					ret = ret + strconv.Itoa(j+1) + ". " + rev.User.DisplayName
+					userid, present := lut[rev.User.Name]
+					if present {
+						ret = ret + " <@" + userid + ">\n"
+					} else {
+						ret = ret + "\n"
+					}
 				}
+			}
+		}
+	} else {
+		ret = ret + "**Request returned no data!**"
+		fmt.Println(err)
+	}
+
+	return ret
+}
+
+// GetMyPullRequests returns only the pull requests opened by the requesting user
+func GetMyPullRequests(a *API, requesterid string) string {
+	ret := ">>> "
+	lut := ReadLUT()
+
+	req, err := a.GetPullRequestsRequest()
+	if err == nil {
+		if len(req.Values) == 0 {
+			ret = ret + "**There are no active pull requests!**"
+		} else {
+			username, present := lut[requesterid]
+			if present {
+				ret = ret + "**Pull requests by " + username + ":**\n"
+				for i, val := range req.Values {
+					if val.Author.User.Name == username {
+						ret = ret + strconv.Itoa(i+1) + ". " + val.Title + "\n"
+					}
+				}
+			} else {
+				ret = ret + "*Couldn't map your Discord ID to a Bitbucket user!*"
 			}
 		}
 	} else {
@@ -98,11 +166,6 @@ func FormatMessage(a *API) *discordgo.MessageEmbed {
 
 // DebugFlag is the global debugging variable
 var DebugFlag = false
-
-// SetDebug enables debug output
-func SetDebug(state bool) {
-	DebugFlag = state
-}
 
 // Debug outputs debug messages
 func Debug(msg interface{}) {
