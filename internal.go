@@ -134,6 +134,38 @@ func GetMyPullRequests(a *API, requesterid string) string {
 	return ret
 }
 
+// GetMyReviews returns all pull requests that the message requester is a reviewer of
+func GetMyReviews(a *API, requesterid string) string {
+	ret := ">>> "
+	lut := ReadLUT()
+
+	req, err := a.GetPullRequestsRequest()
+	if err == nil {
+		if len(req.Values) == 0 {
+			ret = ret + "**There are no active pull requests!**"
+		} else {
+			username, present := lut[requesterid]
+			if present {
+				ret = ret + "**Reviews assigned to " + username + ":**\n"
+				for i, val := range req.Values {
+					for _, rev := range val.Reviewers {
+						if rev.User.Name == username {
+							ret = ret + strconv.Itoa(i+1) + ". " + val.Title + "\n"
+						}
+					}
+				}
+			} else {
+				ret = ret + "*Couldn't map your Discord ID to a Bitbucket user!*"
+			}
+		}
+	} else {
+		ret = ret + "**Request returned no data!**"
+		fmt.Println(err)
+	}
+
+	return ret
+}
+
 // TODO This doesn't work yet
 func FormatMessage(a *API) *discordgo.MessageEmbed {
 	var ret *discordgo.MessageEmbed
