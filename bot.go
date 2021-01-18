@@ -47,24 +47,27 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	switch m.Content {
 	case "!help":
 		s.ChannelMessageSend(m.ChannelID,
-			"These are the supported interactive commands:\n"+
-				"!mypullreqs: Shows the status of your own active pull requests. (TODO)\n"+
-				"!allpullreqs: Shows the status of all active pull requests.\n"+
-				"!reviewing: Shows all pull requests which you're a reviewer of. (TODO)\n"+
-				"!comments: Shows the comments under your active pull requests. (TODO)")
+			">>> __These are the supported interactive commands:__\n"+
+				"**!mypullreqs:** Shows the status of your own active pull requests. *(TODO)*\n"+
+				"**!allpullreqs:** Shows the status of all active pull requests.\n"+
+				"**!reviewing:** Shows all pull requests which you're a reviewer of. *(TODO)*\n"+
+				"**!comments:** Shows the comments under your active pull requests. *(TODO)*")
 	case "!allpullreqs":
 		s.ChannelMessageSend(m.ChannelID, GetAllPullRequests(api))
 	case "!mypullreqs":
-		s.ChannelMessageSend(m.ChannelID, "Not implemented yet")
+		s.ChannelMessageSend(m.ChannelID, "*Not implemented yet*")
 	case "!reviewing":
-		s.ChannelMessageSend(m.ChannelID, "Not implemented yet")
+		s.ChannelMessageSend(m.ChannelID, "*Not implemented yet*")
 	case "!comments":
-		s.ChannelMessageSend(m.ChannelID, "Not implemented yet")
+		s.ChannelMessageSend(m.ChannelID, "*Not implemented yet*")
 	}
 
 	// Just for testing purpose
 	if m.Content == "!ping" {
+		s.ChannelMessageSend(m.ChannelID, "**bold pong**")
 		s.ChannelMessageSend(m.ChannelID, "pong")
+		s.ChannelMessageSend(m.ChannelID, ">>> pong block")
+		//s.ChannelMessageSendEmbed(m.ChannelID, FormatMessage(api))
 	}
 
 }
