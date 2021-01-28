@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	embed "github.com/clinet/discordgo-embed"
 	"log"
 	"net/http"
 	"net/url"
@@ -74,126 +75,211 @@ func ListenForNewRequests(a *API) string {
 }
 
 // GetAllPullRequests returns all currently active pull requests from the rest response
-func GetAllPullRequests(a *API) string {
-	ret := ">>> "
-	lut := ReadLUT()
+func GetAllPullRequests(a *API) *discordgo.MessageEmbed {
+	var (
+		t   string
+		d   string
+		u   string
+		lut = ReadLUT()
+	)
 
 	req, err := a.GetPullRequestsRequest()
 	if err == nil {
 		if len(req.Values) == 0 {
-			ret = ret + "**There are no active pull requests!**"
+			t = "**There are no active pull requests!**"
 		} else {
 			for i, val := range req.Values {
-				ret = ret + "**" + strconv.Itoa(i+1) + ". " + val.Title + "**" + "\n*Reviewers:*\n"
+				d = d + "**" + strconv.Itoa(i+1) + ". " + val.Title + "**" + "\n*Reviewers:*\n"
 				for j, rev := range val.Reviewers {
-					ret = ret + strconv.Itoa(j+1) + ". " + rev.User.DisplayName
+					d = d + strconv.Itoa(j+1) + ". " + rev.User.DisplayName
 					userid, present := lut[rev.User.Name]
 					if present {
-						ret = ret + " <@" + userid + ">\n"
+						d = d + " <@" + userid + ">\n"
 					} else {
-						ret = ret + "\n"
+						d = d + "\n"
 					}
 				}
 			}
 		}
 	} else {
-		ret = ret + "**Request returned no data!**"
+		t = "**Request returned no data!**"
 		fmt.Println(err)
 	}
 
-	return ret
+	e := embed.NewEmbed().SetTitle(t).SetColor(color).SetDescription(d).SetURL(u).MessageEmbed
+	return e
 }
 
 // GetMyPullRequests returns only the pull requests opened by the requesting user
-func GetMyPullRequests(a *API, requesterid string) string {
-	ret := ">>> "
-	lut := ReadLUT()
+func GetMyPullRequests(a *API, rid string) *discordgo.MessageEmbed {
+	var (
+		t   string
+		d   string
+		u   string
+		lut = ReadLUT()
+	)
 
 	req, err := a.GetPullRequestsRequest()
 	if err == nil {
 		if len(req.Values) == 0 {
-			ret = ret + "**There are no active pull requests!**"
+			t = "**There are no active pull requests!**"
 		} else {
-			username, present := lut[requesterid]
+			username, present := lut[rid]
 			if present {
-				ret = ret + "**Pull requests by " + username + ":**\n"
+				d = "**Pull requests by " + username + ":**\n"
 				for i, val := range req.Values {
 					if val.Author.User.Name == username {
-						ret = ret + strconv.Itoa(i+1) + ". " + val.Title + "\n"
+						d = d + strconv.Itoa(i+1) + ". " + val.Title + "\n"
 					}
 				}
 			} else {
-				ret = ret + "*Couldn't map your Discord ID to a Bitbucket user!*"
+				t = "*Couldn't map your Discord ID to a Bitbucket user!*"
 			}
 		}
 	} else {
-		ret = ret + "**Request returned no data!**"
+		t = "**Request returned no data!**"
 		fmt.Println(err)
 	}
 
-	return ret
+	e := embed.NewEmbed().SetTitle(t).SetColor(color).SetDescription(d).SetURL(u).MessageEmbed
+	return e
 }
 
 // GetMyReviews returns all pull requests that the message requester is a reviewer of
-func GetMyReviews(a *API, requesterid string) string {
-	ret := ">>> "
-	lut := ReadLUT()
+func GetMyReviews(a *API, rid string) *discordgo.MessageEmbed {
+	var (
+		t   string
+		d   string
+		u   string
+		lut = ReadLUT()
+	)
 
 	req, err := a.GetPullRequestsRequest()
 	if err == nil {
 		if len(req.Values) == 0 {
-			ret = ret + "**There are no active pull requests!**"
+			t = "**There are no active pull requests!**"
 		} else {
-			username, present := lut[requesterid]
+			username, present := lut[rid]
 			if present {
-				ret = ret + "**Reviews assigned to " + username + ":**\n"
+				d = "**Reviews assigned to " + username + ":**\n"
 				for i, val := range req.Values {
 					for _, rev := range val.Reviewers {
 						if rev.User.Name == username {
-							ret = ret + strconv.Itoa(i+1) + ". " + val.Title + "\n"
+							d = d + strconv.Itoa(i+1) + ". " + val.Title + "\n"
 						}
 					}
 				}
 			} else {
-				ret = ret + "*Couldn't map your Discord ID to a Bitbucket user!*"
+				t = "*Couldn't map your Discord ID to a Bitbucket user!*"
 			}
 		}
 	} else {
-		ret = ret + "**Request returned no data!**"
+		t = "**Request returned no data!**"
 		fmt.Println(err)
 	}
 
-	return ret
+	e := embed.NewEmbed().SetTitle(t).SetColor(color).SetDescription(d).SetURL(u).MessageEmbed
+	return e
 }
 
-// TODO This doesn't work yet
-func FormatMessage(a *API) *discordgo.MessageEmbed {
-	var ret *discordgo.MessageEmbed
-
-	ret.Color = 5
+// GetAllPullRequestsVIP returns all currently active pull requests from the rest response (VIP version)
+func GetAllPullRequestsVIP(a *API) *discordgo.MessageEmbed {
+	var (
+		t   string
+		d   string
+		u   string
+		lut = ReadLUT()
+	)
 
 	req, err := a.GetPullRequestsRequest()
 	if err == nil {
 		if len(req.Values) == 0 {
-			ret.Fields[0].Value = "No active pull requests!"
+			t = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
 		} else {
 			for i, val := range req.Values {
-				ret.Fields[i].Name = "Pull-Request:"
-				ret.Fields[i].Value = req.Values[i].Title
-				ret.Fields[i+1].Name = "Reviewers:"
-				for _, rev := range val.Reviewers {
-					ret.Fields[i+1].Value = rev.User.DisplayName
-					i++
+				d = d + "**" + strconv.Itoa(i+1) + ". " + val.Title + "**" + "\n*Wweviewews:*\n"
+				for j, rev := range val.Reviewers {
+					d = d + strconv.Itoa(j+1) + ". " + rev.User.DisplayName
+					userid, present := lut[rev.User.Name]
+					if present {
+						d = d + " <@" + userid + ">\n"
+					} else {
+						d = d + "\n"
+					}
 				}
-				i++
 			}
 		}
 	} else {
-		ret.Fields[0].Value = "Request returned no data!"
+		t = "**Wequest wetuwnyed nyo data?!?!**"
 		fmt.Println(err)
 	}
 
-	return ret
+	e := embed.NewEmbed().SetTitle(t).SetColor(color).SetDescription(d).SetURL(u).MessageEmbed
+	return e
+}
+
+// GetMyPullRequestsVIP returns only the pull requests opened by the requesting user (VIP version)
+func GetMyPullRequestsVIP(a *API, rid string) *discordgo.MessageEmbed {
+	var (
+		t   string
+		d   string
+		u   string
+		lut = ReadLUT()
+	)
+
+	req, err := a.GetPullRequestsRequest()
+	if err == nil {
+		if len(req.Values) == 0 {
+			t = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
+		} else {
+			username, _ := lut[rid]
+			d = "**Puww wequests by " + username + ":**\n"
+			for i, val := range req.Values {
+				if val.Author.User.Name == username {
+					d = d + strconv.Itoa(i+1) + ". " + val.Title + "\n"
+				}
+			}
+		}
+	} else {
+		t = "**Wequest wetuwnyed nyo data?!?!**"
+		fmt.Println(err)
+	}
+
+	e := embed.NewEmbed().SetTitle(t).SetColor(color).SetDescription(d).SetURL(u).MessageEmbed
+	return e
+}
+
+// GetMyReviewsVIP returns all pull requests that the message requester is a reviewer of (VIP version)
+func GetMyReviewsVIP(a *API, rid string) *discordgo.MessageEmbed {
+	var (
+		t   string
+		d   string
+		u   string
+		lut = ReadLUT()
+	)
+
+	req, err := a.GetPullRequestsRequest()
+	if err == nil {
+		if len(req.Values) == 0 {
+			t = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
+		} else {
+			username, _ := lut[rid]
+			d = "**W-W-Weviews assignyed t-to " + username + ":**\n"
+			for i, val := range req.Values {
+				for _, rev := range val.Reviewers {
+					if rev.User.Name == username {
+						d = d + strconv.Itoa(i+1) + ". " + val.Title + "\n"
+					}
+				}
+			}
+		}
+	} else {
+		t = "**Wequest wetuwnyed nyo data?!?!**"
+		fmt.Println(err)
+	}
+
+	e := embed.NewEmbed().SetTitle(t).SetColor(color).SetDescription(d).SetURL(u).MessageEmbed
+	return e
 }
 
 // DebugFlag is the global debugging variable

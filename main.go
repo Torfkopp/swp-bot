@@ -8,6 +8,8 @@ import (
 var (
 	api     *API
 	UserLUT string
+	vipID   string
+	color   = 4616416
 )
 
 func init() {
