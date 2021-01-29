@@ -74,11 +74,15 @@ func CheckNewPullRequest(a *API) bool {
 		fmt.Println(err)
 	}
 
-	if req.Values[0].CreatedDate > n {
-		n = req.Values[0].CreatedDate
-		return true
-	} else {
+	if len(req.Values) == 0 {
 		return false
+	} else {
+		if req.Values[0].CreatedDate > n {
+			n = req.Values[0].CreatedDate
+			return true
+		} else {
+			return false
+		}
 	}
 }
 
