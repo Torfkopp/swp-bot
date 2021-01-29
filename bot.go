@@ -95,7 +95,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 func PeriodicMessage(s *discordgo.Session) {
 	for {
-		time.Sleep(5 * time.Second)
+		time.Sleep(5 * time.Minute)
 		if CheckNewPullRequest(api) {
 			s.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], NewPullRequestCreated(api))
 			s.ChannelMessageSend(cfg["PING_CHANNEL"], NewPullRequestPing(api))
