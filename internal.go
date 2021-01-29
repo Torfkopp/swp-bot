@@ -49,29 +49,33 @@ func (a *API) Auth(req *http.Request) {
 	}
 }
 
-// ReadLUT reads the provided look up table and turns it into a map
-func ReadLUT() map[string]string {
-	file, err := os.Open(UserLUT)
+// ReadConfig reads the provided config file and turns it into a map
+func ReadConfig() map[string]string {
+	file, err := os.Open(config)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	defer file.Close()
 
-	var lut map[string]string
-	err = json.NewDecoder(file).Decode(&lut)
+	var cfg map[string]string
+	err = json.NewDecoder(file).Decode(&cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return lut
+	return cfg
 }
 
 // TODO Implement me
-func ListenForNewRequests(a *API) string {
-	ret := ">>> "
+func NewPullRequestCreated(a *API) *discordgo.MessageEmbed {
+	var (
+		t string
+		d string
+	)
 
-	return ret
+	e := embed.NewEmbed().SetColor(color).SetTitle(t).SetDescription(d)
+	return e.MessageEmbed
 }
 
 // GetAllPullRequests returns all currently active pull requests from the rest response
@@ -79,26 +83,30 @@ func GetAllPullRequests(a *API) *discordgo.MessageEmbed {
 	var (
 		t   string
 		d   string
-		u   string
-		lut = ReadLUT()
+		fd  string
+		cfg = ReadConfig()
 	)
+
+	e := embed.NewEmbed().SetColor(color)
 
 	req, err := a.GetPullRequestsRequest()
 	if err == nil {
 		if len(req.Values) == 0 {
 			t = "**There are no active pull requests!**"
 		} else {
+			t = "**Active pull requests:**\n"
 			for i, val := range req.Values {
-				d = d + "**" + strconv.Itoa(i+1) + ". " + val.Title + "**" + "\n*Reviewers:*\n"
+				fd = ""
 				for j, rev := range val.Reviewers {
-					d = d + strconv.Itoa(j+1) + ". " + rev.User.DisplayName
-					userid, present := lut[rev.User.Name]
+					fd = fd + strconv.Itoa(j+1) + ". [" + rev.User.DisplayName + "](" + rev.User.Links.Self[0].Href + ") "
+					userid, present := cfg[rev.User.Name]
 					if present {
-						d = d + " <@" + userid + ">\n"
+						fd = fd + "<@" + userid + ">\n"
 					} else {
-						d = d + "\n"
+						fd = fd + "\n"
 					}
 				}
+				e.AddField(strconv.Itoa(i+1)+". "+val.Title, "[*Reviewers:*]("+val.Links.Self[0].Href+")\n"+fd)
 			}
 		}
 	} else {
@@ -106,8 +114,8 @@ func GetAllPullRequests(a *API) *discordgo.MessageEmbed {
 		fmt.Println(err)
 	}
 
-	e := embed.NewEmbed().SetTitle(t).SetColor(color).SetDescription(d).SetURL(u).MessageEmbed
-	return e
+	e.SetTitle(t).SetDescription(d)
+	return e.MessageEmbed
 }
 
 // GetMyPullRequests returns only the pull requests opened by the requesting user
@@ -115,21 +123,24 @@ func GetMyPullRequests(a *API, rid string) *discordgo.MessageEmbed {
 	var (
 		t   string
 		d   string
-		u   string
-		lut = ReadLUT()
+		cfg = ReadConfig()
 	)
+
+	e := embed.NewEmbed().SetColor(color)
 
 	req, err := a.GetPullRequestsRequest()
 	if err == nil {
 		if len(req.Values) == 0 {
 			t = "**There are no active pull requests!**"
 		} else {
-			username, present := lut[rid]
+			username, present := cfg[rid]
 			if present {
-				d = "**Pull requests by " + username + ":**\n"
-				for i, val := range req.Values {
+				t = "**Pull requests by " + username + ":**\n"
+				i := 0
+				for _, val := range req.Values {
 					if val.Author.User.Name == username {
-						d = d + strconv.Itoa(i+1) + ". " + val.Title + "\n"
+						d = d + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
+						i++
 					}
 				}
 			} else {
@@ -141,8 +152,8 @@ func GetMyPullRequests(a *API, rid string) *discordgo.MessageEmbed {
 		fmt.Println(err)
 	}
 
-	e := embed.NewEmbed().SetTitle(t).SetColor(color).SetDescription(d).SetURL(u).MessageEmbed
-	return e
+	e.SetTitle(t).SetDescription(d)
+	return e.MessageEmbed
 }
 
 // GetMyReviews returns all pull requests that the message requester is a reviewer of
@@ -150,22 +161,25 @@ func GetMyReviews(a *API, rid string) *discordgo.MessageEmbed {
 	var (
 		t   string
 		d   string
-		u   string
-		lut = ReadLUT()
+		cfg = ReadConfig()
 	)
+
+	e := embed.NewEmbed().SetColor(color)
 
 	req, err := a.GetPullRequestsRequest()
 	if err == nil {
 		if len(req.Values) == 0 {
 			t = "**There are no active pull requests!**"
 		} else {
-			username, present := lut[rid]
+			username, present := cfg[rid]
 			if present {
-				d = "**Reviews assigned to " + username + ":**\n"
-				for i, val := range req.Values {
+				t = "**Reviews assigned to " + username + ":**\n"
+				i := 0
+				for _, val := range req.Values {
 					for _, rev := range val.Reviewers {
 						if rev.User.Name == username {
-							d = d + strconv.Itoa(i+1) + ". " + val.Title + "\n"
+							d = d + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
+							i++
 						}
 					}
 				}
@@ -178,8 +192,8 @@ func GetMyReviews(a *API, rid string) *discordgo.MessageEmbed {
 		fmt.Println(err)
 	}
 
-	e := embed.NewEmbed().SetTitle(t).SetColor(color).SetDescription(d).SetURL(u).MessageEmbed
-	return e
+	e.SetTitle(t).SetDescription(d)
+	return e.MessageEmbed
 }
 
 // GetAllPullRequestsVIP returns all currently active pull requests from the rest response (VIP version)
@@ -187,26 +201,30 @@ func GetAllPullRequestsVIP(a *API) *discordgo.MessageEmbed {
 	var (
 		t   string
 		d   string
-		u   string
-		lut = ReadLUT()
+		fd  string
+		cfg = ReadConfig()
 	)
+
+	e := embed.NewEmbed().SetColor(color)
 
 	req, err := a.GetPullRequestsRequest()
 	if err == nil {
 		if len(req.Values) == 0 {
 			t = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
 		} else {
+			t = "**Active puww wequests:**\n"
 			for i, val := range req.Values {
-				d = d + "**" + strconv.Itoa(i+1) + ". " + val.Title + "**" + "\n*Wweviewews:*\n"
+				fd = ""
 				for j, rev := range val.Reviewers {
-					d = d + strconv.Itoa(j+1) + ". " + rev.User.DisplayName
-					userid, present := lut[rev.User.Name]
+					fd = fd + strconv.Itoa(j+1) + ". [" + rev.User.DisplayName + "](" + rev.User.Links.Self[0].Href + ") "
+					userid, present := cfg[rev.User.Name]
 					if present {
-						d = d + " <@" + userid + ">\n"
+						fd = fd + "<@" + userid + ">\n"
 					} else {
-						d = d + "\n"
+						fd = fd + "\n"
 					}
 				}
+				e.AddField(strconv.Itoa(i+1)+". "+val.Title, "[*Wweviewews:*]("+val.Links.Self[0].Href+")\n"+fd)
 			}
 		}
 	} else {
@@ -214,8 +232,8 @@ func GetAllPullRequestsVIP(a *API) *discordgo.MessageEmbed {
 		fmt.Println(err)
 	}
 
-	e := embed.NewEmbed().SetTitle(t).SetColor(color).SetDescription(d).SetURL(u).MessageEmbed
-	return e
+	e.SetTitle(t).SetDescription(d)
+	return e.MessageEmbed
 }
 
 // GetMyPullRequestsVIP returns only the pull requests opened by the requesting user (VIP version)
@@ -223,20 +241,23 @@ func GetMyPullRequestsVIP(a *API, rid string) *discordgo.MessageEmbed {
 	var (
 		t   string
 		d   string
-		u   string
-		lut = ReadLUT()
+		cfg = ReadConfig()
 	)
+
+	e := embed.NewEmbed().SetColor(color)
 
 	req, err := a.GetPullRequestsRequest()
 	if err == nil {
 		if len(req.Values) == 0 {
 			t = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
 		} else {
-			username, _ := lut[rid]
-			d = "**Puww wequests by " + username + ":**\n"
-			for i, val := range req.Values {
+			username, _ := cfg[rid]
+			t = "**Puww wequests by " + username + ":**\n"
+			i := 0
+			for _, val := range req.Values {
 				if val.Author.User.Name == username {
-					d = d + strconv.Itoa(i+1) + ". " + val.Title + "\n"
+					d = d + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
+					i++
 				}
 			}
 		}
@@ -245,8 +266,8 @@ func GetMyPullRequestsVIP(a *API, rid string) *discordgo.MessageEmbed {
 		fmt.Println(err)
 	}
 
-	e := embed.NewEmbed().SetTitle(t).SetColor(color).SetDescription(d).SetURL(u).MessageEmbed
-	return e
+	e.SetTitle(t).SetDescription(d)
+	return e.MessageEmbed
 }
 
 // GetMyReviewsVIP returns all pull requests that the message requester is a reviewer of (VIP version)
@@ -254,32 +275,35 @@ func GetMyReviewsVIP(a *API, rid string) *discordgo.MessageEmbed {
 	var (
 		t   string
 		d   string
-		u   string
-		lut = ReadLUT()
+		cfg = ReadConfig()
 	)
+
+	e := embed.NewEmbed().SetColor(color)
 
 	req, err := a.GetPullRequestsRequest()
 	if err == nil {
 		if len(req.Values) == 0 {
 			t = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
 		} else {
-			username, _ := lut[rid]
-			d = "**W-W-Weviews assignyed t-to " + username + ":**\n"
-			for i, val := range req.Values {
+			username, _ := cfg[rid]
+			t = "**W-W-Weviews assignyed t-to " + username + ":**\n"
+			i := 0
+			for _, val := range req.Values {
 				for _, rev := range val.Reviewers {
 					if rev.User.Name == username {
-						d = d + strconv.Itoa(i+1) + ". " + val.Title + "\n"
+						d = d + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
+						i++
 					}
 				}
 			}
 		}
 	} else {
-		t = "**Wequest wetuwnyed nyo data?!?!**"
+		t = "**Wequest wetuwnyed nyo data?!?!"
 		fmt.Println(err)
 	}
 
-	e := embed.NewEmbed().SetTitle(t).SetColor(color).SetDescription(d).SetURL(u).MessageEmbed
-	return e
+	e.SetTitle(t).SetDescription(d)
+	return e.MessageEmbed
 }
 
 // DebugFlag is the global debugging variable

@@ -24,6 +24,7 @@ func StartBot(a *API, bot *discordgo.Session) {
 	// Register events
 	bot.AddHandler(Ready)
 	bot.AddHandler(MessageCreate)
+	//bot.AddHandler(PeriodicMessage)
 
 	err := bot.Open()
 	if err != nil {
@@ -45,7 +46,9 @@ func Ready(s *discordgo.Session, _ *discordgo.Ready) {
 }
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.ID == vipID {
+	cfg := ReadConfig()
+
+	if m.Author.ID == cfg["VIP"] {
 		switch m.Content {
 		case "!help":
 			s.ChannelMessageSendEmbed(m.ChannelID, embed.NewGenericEmbedAdvanced(
