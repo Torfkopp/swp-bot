@@ -61,7 +61,7 @@ func (a *API) Request(req *http.Request) ([]byte, error) {
 	return nil, fmt.Errorf("unknown response status: %s", resp.Status)
 }
 
-// GetReviewerRequest sends reviewer related requests
+// GetPullRequestsRequest sends Bitbucket GET requests
 func (a *API) GetPullRequestsRequest() (*Response, error) {
 
 	req, err := http.NewRequest("GET", a.endPoint.String(), nil)

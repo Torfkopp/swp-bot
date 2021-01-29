@@ -2,31 +2,31 @@ package main
 
 import (
 	"flag"
-	"os"
 )
 
 var (
-	api     *API
-	UserLUT string
+	api    *API
+	config string
+	cfg    map[string]string
+	color  = 4616416
+	n      int64
 )
 
 func init() {
-	flag.StringVar(&UserLUT, "u", "", "File containing the UserLUT")
-	flag.BoolVar(&DebugFlag, "d", false, "Run Bot in foreground and enable debugging output")
+	flag.StringVar(&config, "config", "/home/user/swp_bot.config", "SWP-Bot configuration file")
+	flag.BoolVar(&DebugFlag, "debug", false, "Run bot in foreground and enable debugging output")
 	flag.Parse()
 }
 
 func main() {
-
-	bt := os.Getenv("BITBUCKET_TOKEN") // Bitbucket
-	dt := os.Getenv("DISCORD_TOKEN")   // Bot
-	url := os.Getenv("REST_URL")       // Endpoint URL
+	// Read config file
+	cfg = ReadConfig()
 
 	// Create API access first
-	api, _ = NewAPI(url, bt)
+	api, _ = NewAPI(cfg["REST_URL"], cfg["BITBUCKET_TOKEN"])
 
 	// Create BOT second
-	swpbot := SessionCreate(dt)
+	swpbot := SessionCreate(cfg["DISCORD_TOKEN"])
 
-	StartBot(api, swpbot)
+	StartBot(swpbot)
 }
