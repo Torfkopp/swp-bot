@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func SessionCreate(tok string) *discordgo.Session {
@@ -20,16 +21,17 @@ func SessionCreate(tok string) *discordgo.Session {
 	return bot
 }
 
-func StartBot(a *API, bot *discordgo.Session) {
+func StartBot(bot *discordgo.Session) {
 	// Register events
 	bot.AddHandler(Ready)
 	bot.AddHandler(MessageCreate)
-	//bot.AddHandler(PeriodicMessage)
 
 	err := bot.Open()
 	if err != nil {
 		fmt.Println("Error opening Discord session: ", err)
 	}
+
+	PeriodicMessage(bot)
 
 	// Wait here until CTRL-C or other term signal is received.
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
@@ -46,8 +48,6 @@ func Ready(s *discordgo.Session, _ *discordgo.Ready) {
 }
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	cfg := ReadConfig()
-
 	if m.Author.ID == cfg["VIP"] {
 		switch m.Content {
 		case "!help":
@@ -89,6 +89,16 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSendEmbed(m.ChannelID, embed.NewGenericEmbedAdvanced("*Not implemented yet*", "", color))
 		default:
 			return
+		}
+	}
+}
+
+func PeriodicMessage(s *discordgo.Session) {
+	for {
+		time.Sleep(5 * time.Second)
+		if CheckNewPullRequest(api) {
+			s.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], NewPullRequestCreated(api))
+			s.ChannelMessageSend(cfg["PING_CHANNEL"], NewPullRequestPing(api))
 		}
 	}
 }

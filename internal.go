@@ -67,24 +67,73 @@ func ReadConfig() map[string]string {
 	return cfg
 }
 
-// TODO Implement me
+// CheckNewPullRequest compares the date of the latest pull request with an internal variable
+func CheckNewPullRequest(a *API) bool {
+	req, err := a.GetPullRequestsRequest()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if req.Values[0].CreatedDate > n {
+		n = req.Values[0].CreatedDate
+		return true
+	} else {
+		return false
+	}
+}
+
+// NewPullRequestCreated returns the latest pull request
 func NewPullRequestCreated(a *API) *discordgo.MessageEmbed {
 	var (
 		t string
 		d string
 	)
 
-	e := embed.NewEmbed().SetColor(color).SetTitle(t).SetDescription(d)
+	e := embed.NewEmbed().SetColor(color)
+
+	req, err := a.GetPullRequestsRequest()
+	if err == nil {
+		t = "**New pull request:**\n"
+		d = "[" + req.Values[0].Title + "](" + req.Values[0].Links.Self[0].Href + ")"
+	} else {
+		t = "**Request returned no data!**"
+		fmt.Println(err)
+	}
+
+	e.SetTitle(t).SetDescription(d)
 	return e.MessageEmbed
+}
+
+// NewPullRequestPing returns a string containing the reviewers of the latest pull request
+func NewPullRequestPing(a *API) string {
+	var t string
+
+	req, err := a.GetPullRequestsRequest()
+	if err == nil {
+		t = "**Pinging Reviewers:**\n"
+		for i, rev := range req.Values[0].Reviewers {
+			t = t + strconv.Itoa(i+1) + ". " + rev.User.DisplayName
+			userid, present := cfg[rev.User.Name]
+			if present {
+				t = t + " <@" + userid + ">\n"
+			} else {
+				t = t + "\n"
+			}
+		}
+	} else {
+		t = "**Request returned no data!**"
+		fmt.Println(err)
+	}
+
+	return t
 }
 
 // GetAllPullRequests returns all currently active pull requests from the rest response
 func GetAllPullRequests(a *API) *discordgo.MessageEmbed {
 	var (
-		t   string
-		d   string
-		fd  string
-		cfg = ReadConfig()
+		t  string
+		d  string
+		fd string
 	)
 
 	e := embed.NewEmbed().SetColor(color)
@@ -121,9 +170,8 @@ func GetAllPullRequests(a *API) *discordgo.MessageEmbed {
 // GetMyPullRequests returns only the pull requests opened by the requesting user
 func GetMyPullRequests(a *API, rid string) *discordgo.MessageEmbed {
 	var (
-		t   string
-		d   string
-		cfg = ReadConfig()
+		t string
+		d string
 	)
 
 	e := embed.NewEmbed().SetColor(color)
@@ -159,9 +207,8 @@ func GetMyPullRequests(a *API, rid string) *discordgo.MessageEmbed {
 // GetMyReviews returns all pull requests that the message requester is a reviewer of
 func GetMyReviews(a *API, rid string) *discordgo.MessageEmbed {
 	var (
-		t   string
-		d   string
-		cfg = ReadConfig()
+		t string
+		d string
 	)
 
 	e := embed.NewEmbed().SetColor(color)
@@ -199,10 +246,9 @@ func GetMyReviews(a *API, rid string) *discordgo.MessageEmbed {
 // GetAllPullRequestsVIP returns all currently active pull requests from the rest response (VIP version)
 func GetAllPullRequestsVIP(a *API) *discordgo.MessageEmbed {
 	var (
-		t   string
-		d   string
-		fd  string
-		cfg = ReadConfig()
+		t  string
+		d  string
+		fd string
 	)
 
 	e := embed.NewEmbed().SetColor(color)
@@ -239,9 +285,8 @@ func GetAllPullRequestsVIP(a *API) *discordgo.MessageEmbed {
 // GetMyPullRequestsVIP returns only the pull requests opened by the requesting user (VIP version)
 func GetMyPullRequestsVIP(a *API, rid string) *discordgo.MessageEmbed {
 	var (
-		t   string
-		d   string
-		cfg = ReadConfig()
+		t string
+		d string
 	)
 
 	e := embed.NewEmbed().SetColor(color)
@@ -273,9 +318,8 @@ func GetMyPullRequestsVIP(a *API, rid string) *discordgo.MessageEmbed {
 // GetMyReviewsVIP returns all pull requests that the message requester is a reviewer of (VIP version)
 func GetMyReviewsVIP(a *API, rid string) *discordgo.MessageEmbed {
 	var (
-		t   string
-		d   string
-		cfg = ReadConfig()
+		t string
+		d string
 	)
 
 	e := embed.NewEmbed().SetColor(color)

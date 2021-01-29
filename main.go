@@ -7,7 +7,9 @@ import (
 var (
 	api    *API
 	config string
+	cfg    map[string]string
 	color  = 4616416
+	n      int64
 )
 
 func init() {
@@ -17,7 +19,8 @@ func init() {
 }
 
 func main() {
-	cfg := ReadConfig()
+	// Read config file
+	cfg = ReadConfig()
 
 	// Create API access first
 	api, _ = NewAPI(cfg["REST_URL"], cfg["BITBUCKET_TOKEN"])
@@ -25,5 +28,5 @@ func main() {
 	// Create BOT second
 	swpbot := SessionCreate(cfg["DISCORD_TOKEN"])
 
-	StartBot(api, swpbot)
+	StartBot(swpbot)
 }
