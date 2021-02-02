@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	embed "github.com/clinet/discordgo-embed"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -35,7 +37,7 @@ func NewAPI(location string, token string) (*API, error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: false},
 	}
 
-	a.client = &http.Client{Transport: tr, Timeout: 10 * time.Second}
+	a.client = &http.Client{Transport: tr, Timeout: time.Minute}
 
 	return a, nil
 }
@@ -58,7 +60,6 @@ func ReadConfig() map[string]string {
 
 	defer file.Close()
 
-	var cfg map[string]string
 	err = json.NewDecoder(file).Decode(&cfg)
 	if err != nil {
 		log.Fatal(err)
@@ -70,19 +71,44 @@ func ReadConfig() map[string]string {
 // CheckNewPullRequest compares the date of the latest pull request with an internal variable
 func CheckNewPullRequest(a *API) bool {
 	req, err := a.GetPullRequestsRequest()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	if len(req.Values) == 0 {
-		return false
-	} else {
-		if req.Values[0].CreatedDate > n {
-			n = req.Values[0].CreatedDate
-			return true
-		} else {
+	if err == nil {
+		if req != nil && len(req.Values) == 0 {
 			return false
+		} else {
+			ts, err := ioutil.ReadFile(timestamp)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			tss := strings.TrimSuffix(string(ts), "\n")
+
+			n, err := strconv.ParseInt(tss, 10, 64)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			if req.Values[0].CreatedDate > n {
+				n = req.Values[0].CreatedDate
+
+				f, err := os.OpenFile(timestamp, os.O_WRONLY, 0600)
+				if err != nil {
+					fmt.Println(err)
+				}
+				defer f.Close()
+
+				_, err = f.WriteString(strconv.FormatInt(n, 10))
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				return true
+			} else {
+				return false
+			}
 		}
+	} else {
+		fmt.Println(err)
+		return false
 	}
 }
 
@@ -195,6 +221,9 @@ func GetMyPullRequests(a *API, rid string) *discordgo.MessageEmbed {
 						i++
 					}
 				}
+				if d == "" {
+					d = "*None*"
+				}
 			} else {
 				t = "*Couldn't map your Discord ID to a Bitbucket user!*"
 			}
@@ -233,6 +262,9 @@ func GetMyReviews(a *API, rid string) *discordgo.MessageEmbed {
 							i++
 						}
 					}
+				}
+				if d == "" {
+					d = "*None*"
 				}
 			} else {
 				t = "*Couldn't map your Discord ID to a Bitbucket user!*"
@@ -309,6 +341,9 @@ func GetMyPullRequestsVIP(a *API, rid string) *discordgo.MessageEmbed {
 					i++
 				}
 			}
+			if d == "" {
+				d = "*Nyonye :3*"
+			}
 		}
 	} else {
 		t = "**Wequest wetuwnyed nyo data?!?!**"
@@ -343,6 +378,9 @@ func GetMyReviewsVIP(a *API, rid string) *discordgo.MessageEmbed {
 						i++
 					}
 				}
+			}
+			if d == "" {
+				d = "*Nyonye :3*"
 			}
 		}
 	} else {

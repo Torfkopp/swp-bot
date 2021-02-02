@@ -5,15 +5,16 @@ import (
 )
 
 var (
-	api    *API
-	config string
-	cfg    map[string]string
-	color  = 4616416
-	n      int64
+	api       *API
+	config    string
+	timestamp string
+	cfg       map[string]string
+	color     = 4616416
 )
 
 func init() {
 	flag.StringVar(&config, "config", "/home/user/swp_bot.config", "SWP-Bot configuration file")
+	flag.StringVar(&timestamp, "timestamp", "/tmp/swp_bot.timestamp", "Timestamp of latest PR as int64")
 	flag.BoolVar(&DebugFlag, "debug", false, "Run bot in foreground and enable debugging output")
 	flag.Parse()
 }
