@@ -16,7 +16,6 @@ func HelpMessage() *discordgo.MessageEmbed {
 		"**!allpullrequests:** Shows the status of all active pull requests.\n"+
 			"**!mypullrequests:** Shows the status of your own active pull requests.\n"+
 			"**!myreviews:** Shows all pull requests which you're a reviewer of.\n"+
-			"**!comments:** Shows the comments under your active pull requests. *(TODO)*\n"+
 			"**!about:** Some info about this bot.",
 		color)
 }
@@ -98,18 +97,22 @@ func GetAllPullRequests(api *API) *discordgo.MessageEmbed {
 			title = "**There are no active pull requests!**"
 		} else {
 			title = "**Active pull requests:**\n"
-			for i, val := range request.Values {
+			for i, values := range request.Values {
 				field = ""
-				for j, rev := range val.Reviewers {
-					field = field + strconv.Itoa(j+1) + ". [" + rev.User.DisplayName + "](" + rev.User.Links.Self[0].Href + ") "
-					userid, present := cfg[rev.User.Name]
+				for j, reviewer := range values.Reviewers {
+					field = field + strconv.Itoa(j+1) + ". [" + reviewer.User.DisplayName + "](" + reviewer.User.Links.Self[0].Href + ") "
+					userid, present := cfg[reviewer.User.Name]
 					if present {
-						field = field + "<@" + userid + ">\n"
+						field = field + "<@" + userid + "> "
+					}
+					if reviewer.Approved {
+						field = field + "APPROVED!\n"
 					} else {
 						field = field + "\n"
 					}
 				}
-				embedObject.AddField(strconv.Itoa(i+1)+". "+val.Title, "[*Reviewers:*]("+val.Links.Self[0].Href+")\n"+field)
+				field = field + "Comments: " + strconv.Itoa(values.Properties.CommentCount)
+				embedObject.AddField(strconv.Itoa(i+1)+". "+values.Title, "[*Reviewers:*]("+values.Links.Self[0].Href+")\n"+field)
 			}
 		}
 	} else {

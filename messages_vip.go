@@ -13,7 +13,6 @@ func HelpMessageVIP() *discordgo.MessageEmbed {
 		"**!allpullrequests:** Shows the UwU status of aww active puww wequests.\n"+
 			"**!mypullrequests:** Shows the x3 status of youw own active puww wequests.\n"+
 			"**!myreviews:**  Shows aww puww wequests which you'we a weviewew of, nya.\n"+
-			"**!comments:** Shows the x3 comments >w< undew youw active puww *boops your nose* wequests. *(TODO)*\n"+
 			"**!about:** Some info *sweats* about this bot.",
 		color)
 }
@@ -42,18 +41,22 @@ func GetAllPullRequestsVIP(api *API) *discordgo.MessageEmbed {
 			title = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
 		} else {
 			title = "**Active puww wequests:**\n"
-			for i, val := range request.Values {
+			for i, values := range request.Values {
 				field = ""
-				for j, rev := range val.Reviewers {
-					field = field + strconv.Itoa(j+1) + ". [" + rev.User.DisplayName + "](" + rev.User.Links.Self[0].Href + ") "
-					userid, present := cfg[rev.User.Name]
+				for j, reviewer := range values.Reviewers {
+					field = field + strconv.Itoa(j+1) + ". [" + reviewer.User.DisplayName + "](" + reviewer.User.Links.Self[0].Href + ") "
+					userid, present := cfg[reviewer.User.Name]
 					if present {
 						field = field + "<@" + userid + ">\n"
-					} else {
-						field = field + "\n"
+						if reviewer.Approved {
+							field = field + "NYAAA!\n"
+						} else {
+							field = field + "\n"
+						}
 					}
 				}
-				embedObject.AddField(strconv.Itoa(i+1)+". "+val.Title, "[*Wweviewews:*]("+val.Links.Self[0].Href+")\n"+field)
+				field = field + "Tweets: " + strconv.Itoa(values.Properties.CommentCount)
+				embedObject.AddField(strconv.Itoa(i+1)+". "+values.Title, "[*Wweviewews:*]("+values.Links.Self[0].Href+")\n"+field)
 			}
 		}
 	} else {

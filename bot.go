@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"github.com/clinet/discordgo-embed"
 	"log"
 	"os"
 	"os/signal"
@@ -74,8 +73,6 @@ func MessageCreate(api *API) func(session *discordgo.Session, message *discordgo
 				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyPullRequestsVIP(api, message.Author.ID))
 			case "!myreviews":
 				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyReviewsVIP(api, message.Author.ID))
-			case "!comments":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, embed.NewGenericEmbedAdvanced("*Nyot impwemented yet owo*", "", color))
 			case "!about":
 				_, err = session.ChannelMessageSendEmbed(message.ChannelID, AboutMessageVIP())
 			default:
