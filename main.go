@@ -5,15 +5,10 @@ import (
 	"log"
 )
 
-// TODO some of these shouldn't be global
 var (
-	bAPI1         *API
-	bAPI2         *API
-	jAPI1         *API
 	configFile    string
 	timestampFile string
 	cfg           map[string]string
-	color         = 4616416
 	debugFlag     bool
 )
 
@@ -33,14 +28,14 @@ func main() {
 	cfg = ReadConfig()
 
 	// Create API access first
-	bAPI1, err = NewAPI(cfg["BITBUCKET_URL_1"], cfg["BITBUCKET_TOKEN"])
-	bAPI2, err = NewAPI(cfg["BITBUCKET_URL_2"], cfg["BITBUCKET_TOKEN"])
-	//jAPI1, err = NewAPI(cfg["JIRA_URL_1"], cfg["JIRA_TOKEN"])
+	bAPI1, err := NewAPI(cfg["BITBUCKET_URL_1"], cfg["BITBUCKET_TOKEN"])
+	//bAPI2, err := NewAPI(cfg["BITBUCKET_URL_2"], cfg["BITBUCKET_TOKEN"])
+	//jAPI1, err := NewAPI(cfg["JIRA_URL_1"], cfg["JIRA_TOKEN"])
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Create BOT and start it
 	bot := SessionCreate(cfg["DISCORD_TOKEN"])
-	StartBot(bot)
+	StartBot(bot, bAPI1)
 }

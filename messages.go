@@ -7,6 +7,9 @@ import (
 	"strconv"
 )
 
+// Define the color used in the embeds
+const color = 4616416
+
 // HelpMessage returns an embed containing an info text about the supported commands
 func HelpMessage() *discordgo.MessageEmbed {
 	return embed.NewGenericEmbedAdvanced("__These are the supported interactive commands:__",
@@ -33,8 +36,10 @@ func NewPullRequestCreated(api *API) *discordgo.MessageEmbed {
 		body  string
 	)
 
+	// Create an empty embed with a predefined color
 	embedObject := embed.NewEmbed().SetColor(color)
 
+	// Make a request to Bitbucket and iterate over it to fill title and body
 	request, err := api.GetActivePullRequests()
 	if err == nil {
 		title = "**New pull request:**\n"
@@ -44,6 +49,7 @@ func NewPullRequestCreated(api *API) *discordgo.MessageEmbed {
 		log.Println(err)
 	}
 
+	// Add title and body previously populated to the embed and return it
 	embedObject.SetTitle(title).SetDescription(body)
 	return embedObject.MessageEmbed
 }
@@ -52,6 +58,7 @@ func NewPullRequestCreated(api *API) *discordgo.MessageEmbed {
 func NewPullRequestPing(api *API) string {
 	var text string
 
+	// Make a request to Bitbucket and iterate over it to fill text
 	request, err := api.GetActivePullRequests()
 	if err == nil {
 		text = "**Pinging Reviewers:**\n"
@@ -69,6 +76,7 @@ func NewPullRequestPing(api *API) string {
 		log.Println(err)
 	}
 
+	// As pings in Discord don't work in embeds, we need to return a simple string
 	return text
 }
 
@@ -80,8 +88,10 @@ func GetAllPullRequests(api *API) *discordgo.MessageEmbed {
 		field string
 	)
 
+	// Create an empty embed with a predefined color
 	embedObject := embed.NewEmbed().SetColor(color)
 
+	// Make a request to Bitbucket and iterate over it to fill title and field
 	request, err := api.GetActivePullRequests()
 	if err == nil {
 		if len(request.Values) == 0 {
@@ -107,6 +117,7 @@ func GetAllPullRequests(api *API) *discordgo.MessageEmbed {
 		log.Println(err)
 	}
 
+	// Add title and body previously populated to the embed and return it
 	embedObject.SetTitle(title).SetDescription(body)
 	return embedObject.MessageEmbed
 }
@@ -118,8 +129,10 @@ func GetMyPullRequests(api *API, rid string) *discordgo.MessageEmbed {
 		body  string
 	)
 
+	// Create an empty embed with a predefined color
 	embedObject := embed.NewEmbed().SetColor(color)
 
+	// Make a request to Bitbucket and iterate over it to fill title and body
 	request, err := api.GetActivePullRequests()
 	if err == nil {
 		if len(request.Values) == 0 {
@@ -147,6 +160,7 @@ func GetMyPullRequests(api *API, rid string) *discordgo.MessageEmbed {
 		log.Println(err)
 	}
 
+	// Add title and body previously populated to the embed and return it
 	embedObject.SetTitle(title).SetDescription(body)
 	return embedObject.MessageEmbed
 }
@@ -158,8 +172,10 @@ func GetMyReviews(api *API, rid string) *discordgo.MessageEmbed {
 		body  string
 	)
 
+	// Create an empty embed with a predefined color
 	embedObject := embed.NewEmbed().SetColor(color)
 
+	// Make a request to Bitbucket and iterate over it to fill title and body
 	request, err := api.GetActivePullRequests()
 	if err == nil {
 		if len(request.Values) == 0 {
@@ -189,6 +205,7 @@ func GetMyReviews(api *API, rid string) *discordgo.MessageEmbed {
 		log.Println(err)
 	}
 
+	// Add title and body previously populated to the embed and return it
 	embedObject.SetTitle(title).SetDescription(body)
 	return embedObject.MessageEmbed
 }
