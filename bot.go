@@ -44,49 +44,41 @@ func StartBot(bot *discordgo.Session) {
 }
 
 func Ready(s *discordgo.Session, _ *discordgo.Ready) {
-	s.UpdateStatus(0, "Catan")
+	s.UpdateStatus(1, "")
 }
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == cfg["VIP"] {
 		switch m.Content {
 		case "!help":
-			s.ChannelMessageSendEmbed(m.ChannelID, embed.NewGenericEmbedAdvanced(
-				"__These awe the x3 suppowted intewactive commands:__",
-				"**!allpullrequests:** Shows the UwU status of aww active puww wequests.\n"+
-					"**!mypullrequests:** Shows the x3 status of youw own active puww wequests.\n"+
-					"**!myreviews:**  Shows aww puww wequests which you'we a weviewew of, nya.\n"+
-					"**!comments:** Shows the x3 comments >w< undew youw active puww *boops your nose* wequests. *(TODO)*",
-				color))
+			s.ChannelMessageSendEmbed(m.ChannelID, HelpMessageVIP())
 		case "!allpullrequests":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetAllPullRequestsVIP(api))
+			s.ChannelMessageSendEmbed(m.ChannelID, GetAllPullRequestsVIP(bAPI1))
 		case "!mypullrequests":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetMyPullRequestsVIP(api, m.Author.ID))
+			s.ChannelMessageSendEmbed(m.ChannelID, GetMyPullRequestsVIP(bAPI1, m.Author.ID))
 		case "!myreviews":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetMyReviewsVIP(api, m.Author.ID))
+			s.ChannelMessageSendEmbed(m.ChannelID, GetMyReviewsVIP(bAPI1, m.Author.ID))
 		case "!comments":
 			s.ChannelMessageSendEmbed(m.ChannelID, embed.NewGenericEmbedAdvanced("*Nyot impwemented yet owo*", "", color))
+		case "!about":
+			s.ChannelMessageSendEmbed(m.ChannelID, AboutMessageVIP())
 		default:
 			return
 		}
 	} else {
 		switch m.Content {
 		case "!help":
-			s.ChannelMessageSendEmbed(m.ChannelID, embed.NewGenericEmbedAdvanced(
-				"__These are the supported interactive commands:__",
-				"**!allpullrequests:** Shows the status of all active pull requests.\n"+
-					"**!mypullrequests:** Shows the status of your own active pull requests.\n"+
-					"**!myreviews:** Shows all pull requests which you're a reviewer of.\n"+
-					"**!comments:** Shows the comments under your active pull requests. *(TODO)*",
-				color))
+			s.ChannelMessageSendEmbed(m.ChannelID, HelpMessage())
 		case "!allpullrequests":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetAllPullRequests(api))
+			s.ChannelMessageSendEmbed(m.ChannelID, GetAllPullRequests(bAPI1))
 		case "!mypullrequests":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetMyPullRequests(api, m.Author.ID))
+			s.ChannelMessageSendEmbed(m.ChannelID, GetMyPullRequests(bAPI1, m.Author.ID))
 		case "!myreviews":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetMyReviews(api, m.Author.ID))
+			s.ChannelMessageSendEmbed(m.ChannelID, GetMyReviews(bAPI1, m.Author.ID))
 		case "!comments":
 			s.ChannelMessageSendEmbed(m.ChannelID, embed.NewGenericEmbedAdvanced("*Not implemented yet*", "", color))
+		case "!about":
+			s.ChannelMessageSendEmbed(m.ChannelID, AboutMessage())
 		default:
 			return
 		}
@@ -95,10 +87,10 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 func PeriodicMessage(s *discordgo.Session) {
 	for {
-		time.Sleep(5 * time.Minute)
-		if CheckNewPullRequest(api) {
-			s.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], NewPullRequestCreated(api))
-			s.ChannelMessageSend(cfg["PING_CHANNEL"], NewPullRequestPing(api))
+		time.Sleep(3 * time.Minute)
+		if CheckNewPullRequest(bAPI1) {
+			s.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], NewPullRequestCreated(bAPI1))
+			s.ChannelMessageSend(cfg["PING_CHANNEL"], NewPullRequestPing(bAPI1))
 		}
 	}
 }
