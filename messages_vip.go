@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/clinet/discordgo-embed"
+	"log"
 	"strconv"
 )
 
@@ -27,114 +27,114 @@ func AboutMessageVIP() *discordgo.MessageEmbed {
 }
 
 // GetAllPullRequestsVIP returns all currently active pull requests from the rest response (VIP version)
-func GetAllPullRequestsVIP(a *API) *discordgo.MessageEmbed {
+func GetAllPullRequestsVIP(api *API) *discordgo.MessageEmbed {
 	var (
-		t  string
-		d  string
-		fd string
+		title string
+		body  string
+		field string
 	)
 
-	e := embed.NewEmbed().SetColor(color)
+	embedObject := embed.NewEmbed().SetColor(color)
 
-	req, err := a.GetPullRequestsRequest()
+	request, err := api.GetActivePullRequests()
 	if err == nil {
-		if len(req.Values) == 0 {
-			t = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
+		if len(request.Values) == 0 {
+			title = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
 		} else {
-			t = "**Active puww wequests:**\n"
-			for i, val := range req.Values {
-				fd = ""
+			title = "**Active puww wequests:**\n"
+			for i, val := range request.Values {
+				field = ""
 				for j, rev := range val.Reviewers {
-					fd = fd + strconv.Itoa(j+1) + ". [" + rev.User.DisplayName + "](" + rev.User.Links.Self[0].Href + ") "
+					field = field + strconv.Itoa(j+1) + ". [" + rev.User.DisplayName + "](" + rev.User.Links.Self[0].Href + ") "
 					userid, present := cfg[rev.User.Name]
 					if present {
-						fd = fd + "<@" + userid + ">\n"
+						field = field + "<@" + userid + ">\n"
 					} else {
-						fd = fd + "\n"
+						field = field + "\n"
 					}
 				}
-				e.AddField(strconv.Itoa(i+1)+". "+val.Title, "[*Wweviewews:*]("+val.Links.Self[0].Href+")\n"+fd)
+				embedObject.AddField(strconv.Itoa(i+1)+". "+val.Title, "[*Wweviewews:*]("+val.Links.Self[0].Href+")\n"+field)
 			}
 		}
 	} else {
-		t = "**Wequest wetuwnyed nyo data?!?!**"
-		fmt.Println(err)
+		title = "**Wequest wetuwnyed nyo data?!?!**"
+		log.Println(err)
 	}
 
-	e.SetTitle(t).SetDescription(d)
-	return e.MessageEmbed
+	embedObject.SetTitle(title).SetDescription(body)
+	return embedObject.MessageEmbed
 }
 
 // GetMyPullRequestsVIP returns only the pull requests opened by the requesting user (VIP version)
-func GetMyPullRequestsVIP(a *API, rid string) *discordgo.MessageEmbed {
+func GetMyPullRequestsVIP(api *API, rid string) *discordgo.MessageEmbed {
 	var (
-		t string
-		d string
+		title string
+		body  string
 	)
 
-	e := embed.NewEmbed().SetColor(color)
+	embedObject := embed.NewEmbed().SetColor(color)
 
-	req, err := a.GetPullRequestsRequest()
+	request, err := api.GetActivePullRequests()
 	if err == nil {
-		if len(req.Values) == 0 {
-			t = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
+		if len(request.Values) == 0 {
+			title = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
 		} else {
 			username, _ := cfg[rid]
-			t = "**Puww wequests by " + username + ":**\n"
+			title = "**Puww wequests by " + username + ":**\n"
 			i := 0
-			for _, val := range req.Values {
+			for _, val := range request.Values {
 				if val.Author.User.Name == username {
-					d = d + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
+					body = body + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
 					i++
 				}
 			}
-			if d == "" {
-				d = "*Nyonye :3*"
+			if body == "" {
+				body = "*Nyonye :3*"
 			}
 		}
 	} else {
-		t = "**Wequest wetuwnyed nyo data?!?!**"
-		fmt.Println(err)
+		title = "**Wequest wetuwnyed nyo data?!?!**"
+		log.Println(err)
 	}
 
-	e.SetTitle(t).SetDescription(d)
-	return e.MessageEmbed
+	embedObject.SetTitle(title).SetDescription(body)
+	return embedObject.MessageEmbed
 }
 
 // GetMyReviewsVIP returns all pull requests that the message requester is a reviewer of (VIP version)
-func GetMyReviewsVIP(a *API, rid string) *discordgo.MessageEmbed {
+func GetMyReviewsVIP(api *API, rid string) *discordgo.MessageEmbed {
 	var (
-		t string
-		d string
+		title string
+		body  string
 	)
 
-	e := embed.NewEmbed().SetColor(color)
+	embedObject := embed.NewEmbed().SetColor(color)
 
-	req, err := a.GetPullRequestsRequest()
+	request, err := api.GetActivePullRequests()
 	if err == nil {
-		if len(req.Values) == 0 {
-			t = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
+		if len(request.Values) == 0 {
+			title = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
 		} else {
 			username, _ := cfg[rid]
-			t = "**W-W-Weviews assignyed t-to " + username + ":**\n"
+			title = "**W-W-Weviews assignyed t-to " + username + ":**\n"
 			i := 0
-			for _, val := range req.Values {
+			for _, val := range request.Values {
 				for _, rev := range val.Reviewers {
 					if rev.User.Name == username {
-						d = d + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
+						body = body + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
 						i++
 					}
 				}
 			}
-			if d == "" {
-				d = "*Nyonye :3*"
+			if body == "" {
+				body = "*Nyonye :3*"
 			}
 		}
 	} else {
-		t = "**Wequest wetuwnyed nyo data?!?!"
-		fmt.Println(err)
+		title = "**Wequest wetuwnyed nyo data?!?!"
+		log.Println(err)
 	}
 
-	e.SetTitle(t).SetDescription(d)
-	return e.MessageEmbed
+	embedObject.SetTitle(title).SetDescription(body)
+	return embedObject.MessageEmbed
 }

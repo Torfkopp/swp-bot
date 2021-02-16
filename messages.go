@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/clinet/discordgo-embed"
+	"log"
 	"strconv"
 )
 
@@ -27,168 +27,168 @@ func AboutMessage() *discordgo.MessageEmbed {
 }
 
 // NewPullRequestCreated returns the latest pull request
-func NewPullRequestCreated(a *API) *discordgo.MessageEmbed {
+func NewPullRequestCreated(api *API) *discordgo.MessageEmbed {
 	var (
-		t string
-		d string
+		title string
+		body  string
 	)
 
-	e := embed.NewEmbed().SetColor(color)
+	embedObject := embed.NewEmbed().SetColor(color)
 
-	req, err := a.GetPullRequestsRequest()
+	request, err := api.GetActivePullRequests()
 	if err == nil {
-		t = "**New pull request:**\n"
-		d = "[" + req.Values[0].Title + "](" + req.Values[0].Links.Self[0].Href + ")"
+		title = "**New pull request:**\n"
+		body = "[" + request.Values[0].Title + "](" + request.Values[0].Links.Self[0].Href + ")"
 	} else {
-		t = "**Request returned no data!**"
-		fmt.Println(err)
+		title = "**Request returned no data!**"
+		log.Println(err)
 	}
 
-	e.SetTitle(t).SetDescription(d)
-	return e.MessageEmbed
+	embedObject.SetTitle(title).SetDescription(body)
+	return embedObject.MessageEmbed
 }
 
 // NewPullRequestPing returns a string containing the reviewers of the latest pull request
-func NewPullRequestPing(a *API) string {
-	var t string
+func NewPullRequestPing(api *API) string {
+	var text string
 
-	req, err := a.GetPullRequestsRequest()
+	request, err := api.GetActivePullRequests()
 	if err == nil {
-		t = "**Pinging Reviewers:**\n"
-		for i, rev := range req.Values[0].Reviewers {
-			t = t + strconv.Itoa(i+1) + ". " + rev.User.DisplayName
+		text = "**Pinging Reviewers:**\n"
+		for i, rev := range request.Values[0].Reviewers {
+			text = text + strconv.Itoa(i+1) + ". " + rev.User.DisplayName
 			userid, present := cfg[rev.User.Name]
 			if present {
-				t = t + " <@" + userid + ">\n"
+				text = text + " <@" + userid + ">\n"
 			} else {
-				t = t + "\n"
+				text = text + "\n"
 			}
 		}
 	} else {
-		t = "**Request returned no data!**"
-		fmt.Println(err)
+		text = "**Request returned no data!**"
+		log.Println(err)
 	}
 
-	return t
+	return text
 }
 
 // GetAllPullRequests returns all currently active pull requests from the rest response
-func GetAllPullRequests(a *API) *discordgo.MessageEmbed {
+func GetAllPullRequests(api *API) *discordgo.MessageEmbed {
 	var (
-		t  string
-		d  string
-		fd string
+		title string
+		body  string
+		field string
 	)
 
-	e := embed.NewEmbed().SetColor(color)
+	embedObject := embed.NewEmbed().SetColor(color)
 
-	req, err := a.GetPullRequestsRequest()
+	request, err := api.GetActivePullRequests()
 	if err == nil {
-		if len(req.Values) == 0 {
-			t = "**There are no active pull requests!**"
+		if len(request.Values) == 0 {
+			title = "**There are no active pull requests!**"
 		} else {
-			t = "**Active pull requests:**\n"
-			for i, val := range req.Values {
-				fd = ""
+			title = "**Active pull requests:**\n"
+			for i, val := range request.Values {
+				field = ""
 				for j, rev := range val.Reviewers {
-					fd = fd + strconv.Itoa(j+1) + ". [" + rev.User.DisplayName + "](" + rev.User.Links.Self[0].Href + ") "
+					field = field + strconv.Itoa(j+1) + ". [" + rev.User.DisplayName + "](" + rev.User.Links.Self[0].Href + ") "
 					userid, present := cfg[rev.User.Name]
 					if present {
-						fd = fd + "<@" + userid + ">\n"
+						field = field + "<@" + userid + ">\n"
 					} else {
-						fd = fd + "\n"
+						field = field + "\n"
 					}
 				}
-				e.AddField(strconv.Itoa(i+1)+". "+val.Title, "[*Reviewers:*]("+val.Links.Self[0].Href+")\n"+fd)
+				embedObject.AddField(strconv.Itoa(i+1)+". "+val.Title, "[*Reviewers:*]("+val.Links.Self[0].Href+")\n"+field)
 			}
 		}
 	} else {
-		t = "**Request returned no data!**"
-		fmt.Println(err)
+		title = "**Request returned no data!**"
+		log.Println(err)
 	}
 
-	e.SetTitle(t).SetDescription(d)
-	return e.MessageEmbed
+	embedObject.SetTitle(title).SetDescription(body)
+	return embedObject.MessageEmbed
 }
 
 // GetMyPullRequests returns only the pull requests opened by the requesting user
-func GetMyPullRequests(a *API, rid string) *discordgo.MessageEmbed {
+func GetMyPullRequests(api *API, rid string) *discordgo.MessageEmbed {
 	var (
-		t string
-		d string
+		title string
+		body  string
 	)
 
-	e := embed.NewEmbed().SetColor(color)
+	embedObject := embed.NewEmbed().SetColor(color)
 
-	req, err := a.GetPullRequestsRequest()
+	request, err := api.GetActivePullRequests()
 	if err == nil {
-		if len(req.Values) == 0 {
-			t = "**There are no active pull requests!**"
+		if len(request.Values) == 0 {
+			title = "**There are no active pull requests!**"
 		} else {
 			username, present := cfg[rid]
 			if present {
-				t = "**Pull requests by " + username + ":**\n"
+				title = "**Pull requests by " + username + ":**\n"
 				i := 0
-				for _, val := range req.Values {
+				for _, val := range request.Values {
 					if val.Author.User.Name == username {
-						d = d + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
+						body = body + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
 						i++
 					}
 				}
-				if d == "" {
-					d = "*None*"
+				if body == "" {
+					body = "*None*"
 				}
 			} else {
-				t = "*Couldn't map your Discord ID to a Bitbucket user!*"
+				title = "*Couldn'title map your Discord ID to api Bitbucket user!*"
 			}
 		}
 	} else {
-		t = "**Request returned no data!**"
-		fmt.Println(err)
+		title = "**Request returned no data!**"
+		log.Println(err)
 	}
 
-	e.SetTitle(t).SetDescription(d)
-	return e.MessageEmbed
+	embedObject.SetTitle(title).SetDescription(body)
+	return embedObject.MessageEmbed
 }
 
 // GetMyReviews returns all pull requests that the message requester is a reviewer of
-func GetMyReviews(a *API, rid string) *discordgo.MessageEmbed {
+func GetMyReviews(api *API, rid string) *discordgo.MessageEmbed {
 	var (
-		t string
-		d string
+		title string
+		body  string
 	)
 
-	e := embed.NewEmbed().SetColor(color)
+	embedObject := embed.NewEmbed().SetColor(color)
 
-	req, err := a.GetPullRequestsRequest()
+	request, err := api.GetActivePullRequests()
 	if err == nil {
-		if len(req.Values) == 0 {
-			t = "**There are no active pull requests!**"
+		if len(request.Values) == 0 {
+			title = "**There are no active pull requests!**"
 		} else {
 			username, present := cfg[rid]
 			if present {
-				t = "**Reviews assigned to " + username + ":**\n"
+				title = "**Reviews assigned to " + username + ":**\n"
 				i := 0
-				for _, val := range req.Values {
+				for _, val := range request.Values {
 					for _, rev := range val.Reviewers {
 						if rev.User.Name == username {
-							d = d + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
+							body = body + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
 							i++
 						}
 					}
 				}
-				if d == "" {
-					d = "*None*"
+				if body == "" {
+					body = "*None*"
 				}
 			} else {
-				t = "*Couldn't map your Discord ID to a Bitbucket user!*"
+				title = "*Couldn'title map your Discord ID to api Bitbucket user!*"
 			}
 		}
 	} else {
-		t = "**Request returned no data!**"
-		fmt.Println(err)
+		title = "**Request returned no data!**"
+		log.Println(err)
 	}
 
-	e.SetTitle(t).SetDescription(d)
-	return e.MessageEmbed
+	embedObject.SetTitle(title).SetDescription(body)
+	return embedObject.MessageEmbed
 }

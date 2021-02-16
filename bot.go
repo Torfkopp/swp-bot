@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-func SessionCreate(tok string) *discordgo.Session {
-	// Create a new Discord session
-	bot, err := discordgo.New("Bot " + tok)
+// SessionCreate creates a new Discord session
+func SessionCreate(token string) *discordgo.Session {
+	bot, err := discordgo.New("Bot " + token)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -21,76 +21,100 @@ func SessionCreate(tok string) *discordgo.Session {
 	return bot
 }
 
+// StartBot adds event handlers and starts the main bot function
 func StartBot(bot *discordgo.Session) {
 	// Register events
 	bot.AddHandler(Ready)
 	bot.AddHandler(MessageCreate)
 
+	// Create connection to bot
 	err := bot.Open()
 	if err != nil {
-		fmt.Println("Error opening Discord session: ", err)
+		log.Fatal("Error opening Discord session: ", err)
 	}
 
+	// Routine to periodically post messages
 	PeriodicMessage(bot)
 
 	// Wait here until CTRL-C or other term signal is received.
+	// TODO Only call this if running in debug mode otherwise create background thread
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
 
 	// Cleanly close down the Discord session.
-	bot.Close()
+	err = bot.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
+// Ready is called upon a ready event and sets the bots status
 func Ready(s *discordgo.Session, _ *discordgo.Ready) {
-	s.UpdateStatus(1, "")
+	err := s.UpdateStatus(1, "")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.ID == cfg["VIP"] {
-		switch m.Content {
+// MessageCreate is called upon a received message and conditionally answers it
+func MessageCreate(session *discordgo.Session, message *discordgo.MessageCreate) {
+	var err error
+	// This part is just for shits and giggles
+	if message.Author.ID == cfg["VIP"] {
+		switch message.Content {
 		case "!help":
-			s.ChannelMessageSendEmbed(m.ChannelID, HelpMessageVIP())
+			_, err = session.ChannelMessageSendEmbed(message.ChannelID, HelpMessageVIP())
 		case "!allpullrequests":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetAllPullRequestsVIP(bAPI1))
+			_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetAllPullRequestsVIP(bAPI1))
 		case "!mypullrequests":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetMyPullRequestsVIP(bAPI1, m.Author.ID))
+			_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyPullRequestsVIP(bAPI1, message.Author.ID))
 		case "!myreviews":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetMyReviewsVIP(bAPI1, m.Author.ID))
+			_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyReviewsVIP(bAPI1, message.Author.ID))
 		case "!comments":
-			s.ChannelMessageSendEmbed(m.ChannelID, embed.NewGenericEmbedAdvanced("*Nyot impwemented yet owo*", "", color))
+			_, err = session.ChannelMessageSendEmbed(message.ChannelID, embed.NewGenericEmbedAdvanced("*Nyot impwemented yet owo*", "", color))
 		case "!about":
-			s.ChannelMessageSendEmbed(m.ChannelID, AboutMessageVIP())
+			_, err = session.ChannelMessageSendEmbed(message.ChannelID, AboutMessageVIP())
 		default:
 			return
 		}
 	} else {
-		switch m.Content {
+		// This part is the more serious portion of code here
+		switch message.Content {
 		case "!help":
-			s.ChannelMessageSendEmbed(m.ChannelID, HelpMessage())
+			_, err = session.ChannelMessageSendEmbed(message.ChannelID, HelpMessage())
 		case "!allpullrequests":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetAllPullRequests(bAPI1))
+			_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetAllPullRequests(bAPI1))
 		case "!mypullrequests":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetMyPullRequests(bAPI1, m.Author.ID))
+			_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyPullRequests(bAPI1, message.Author.ID))
 		case "!myreviews":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetMyReviews(bAPI1, m.Author.ID))
+			_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyReviews(bAPI1, message.Author.ID))
 		case "!comments":
-			s.ChannelMessageSendEmbed(m.ChannelID, embed.NewGenericEmbedAdvanced("*Not implemented yet*", "", color))
+			_, err = session.ChannelMessageSendEmbed(message.ChannelID, embed.NewGenericEmbedAdvanced("*Not implemented yet*", "", color))
 		case "!about":
-			s.ChannelMessageSendEmbed(m.ChannelID, AboutMessage())
+			_, err = session.ChannelMessageSendEmbed(message.ChannelID, AboutMessage())
 		default:
 			return
 		}
 	}
+	if err != nil {
+		log.Println(err)
+	}
 }
 
-func PeriodicMessage(s *discordgo.Session) {
+// PeriodicMessage conditionally sends a message to a specified channel every 3 minutes
+func PeriodicMessage(session *discordgo.Session) {
+	var err error
 	for {
 		time.Sleep(3 * time.Minute)
+		// Only send message if there are actual news
 		if CheckNewPullRequest(bAPI1) {
-			s.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], NewPullRequestCreated(bAPI1))
-			s.ChannelMessageSend(cfg["PING_CHANNEL"], NewPullRequestPing(bAPI1))
+			_, err = session.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], NewPullRequestCreated(bAPI1))
+			_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], NewPullRequestPing(bAPI1))
+			if err != nil {
+				log.Println(err)
+			}
 		}
 	}
 }

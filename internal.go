@@ -17,47 +17,59 @@ import (
 
 // NewAPI implements API constructor
 func NewAPI(location string, token string) (*API, error) {
+	// Check if url isn't empty
 	if len(location) == 0 {
 		return nil, errors.New("url empty")
 	}
 
-	u, err := url.ParseRequestURI(location)
-
+	// Parse URL
+	endPoint, err := url.ParseRequestURI(location)
 	if err != nil {
 		return nil, err
 	}
 
-	a := new(API)
-	a.endPoint = u
-	a.token = token
+	// Create new API object
+	api := new(API)
+	api.endPoint = endPoint
+	api.token = token
 
-	tr := &http.Transport{
+	// Make sure we use a valid and secure connection
+	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: false},
 	}
 
-	a.client = &http.Client{Transport: tr, Timeout: time.Minute}
+	// Set up http connection with a reasonable timeout
+	api.client = &http.Client{Transport: transport, Timeout: time.Minute}
 
-	return a, nil
+	return api, nil
 }
 
 // Auth implements token auth
-func (a *API) Auth(req *http.Request) {
+func (api *API) Auth(req *http.Request) {
 	// Supports unauthenticated access as well:
 	// If token is not set, no authorization header is added
-	if a.token != "" {
-		req.Header.Set("Authorization", "Bearer "+a.token)
+	if api.token != "" {
+		req.Header.Set("Authorization", "Bearer "+api.token)
 	}
 }
 
 // ReadConfig reads the provided config file and turns it into a map
 func ReadConfig() map[string]string {
-	file, err := os.Open(config)
+	// Open config file
+	file, err := os.Open(configFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer file.Close()
+	// Defer file closure so it runs after the return
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
+	// Decode config file from json
 	err = json.NewDecoder(file).Decode(&cfg)
 	if err != nil {
 		log.Fatal(err)
@@ -67,36 +79,52 @@ func ReadConfig() map[string]string {
 }
 
 // CheckNewPullRequest compares the date of the latest pull request with an internal variable
-func CheckNewPullRequest(a *API) bool {
-	req, err := a.GetPullRequestsRequest()
+func CheckNewPullRequest(api *API) bool {
+	// Craft a GET request
+	req, err := api.GetActivePullRequests()
+	// Only run if no error occurred yet
 	if err == nil {
+		// Return false if there are open PRs
 		if req != nil && len(req.Values) == 0 {
 			return false
 		} else {
-			ts, err := ioutil.ReadFile(timestamp)
+			// Read contents of the timestamp file
+			timestamp, err := ioutil.ReadFile(timestampFile)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 			}
 
-			tss := strings.TrimSuffix(string(ts), "\n")
+			// Trim the newline character to avoid trouble later
+			timestampCleaned := strings.TrimSuffix(string(timestamp), "\n")
 
-			n, err := strconv.ParseInt(tss, 10, 64)
+			// Parse the timestamp into a variable
+			n, err := strconv.ParseInt(timestampCleaned, 10, 64)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 			}
 
+			// Compare the timestamp of the latest PR with our previous timestamp
 			if req.Values[0].CreatedDate > n {
 				n = req.Values[0].CreatedDate
 
-				f, err := os.OpenFile(timestamp, os.O_WRONLY, 0600)
+				// Open the timestamp file for writing here
+				file, err := os.OpenFile(timestampFile, os.O_WRONLY, 0600)
 				if err != nil {
 					fmt.Println(err)
 				}
-				defer f.Close()
 
-				_, err = f.WriteString(strconv.FormatInt(n, 10))
+				// Defer file closure so it runs after the return
+				defer func() {
+					err = file.Close()
+					if err != nil {
+						log.Fatal(err)
+					}
+				}()
+
+				// Overwrite the timestamp in our file with the latest recorded one
+				_, err = file.WriteString(strconv.FormatInt(n, 10))
 				if err != nil {
-					fmt.Println(err)
+					log.Println(err)
 				}
 
 				return true
@@ -105,17 +133,14 @@ func CheckNewPullRequest(a *API) bool {
 			}
 		}
 	} else {
-		fmt.Println(err)
+		log.Println(err)
 		return false
 	}
 }
 
-// DebugFlag is the global debugging variable
-var DebugFlag = false
-
 // Debug outputs debug messages
 func Debug(msg interface{}) {
-	if DebugFlag {
-		fmt.Printf("%+v\n", msg)
+	if debugFlag {
+		log.Printf("%+v\n", msg)
 	}
 }
