@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"github.com/clinet/discordgo-embed"
 	"log"
 	"os"
 	"os/signal"
@@ -11,9 +10,9 @@ import (
 	"time"
 )
 
-func SessionCreate(tok string) *discordgo.Session {
-	// Create a new Discord session
-	bot, err := discordgo.New("Bot " + tok)
+// SessionCreate creates a new Discord session
+func SessionCreate(token string) *discordgo.Session {
+	bot, err := discordgo.New("Bot " + token)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -21,84 +20,99 @@ func SessionCreate(tok string) *discordgo.Session {
 	return bot
 }
 
-func StartBot(bot *discordgo.Session) {
+// StartBot adds event handlers and starts the main bot function
+func StartBot(bot *discordgo.Session, api *API) {
 	// Register events
 	bot.AddHandler(Ready)
-	bot.AddHandler(MessageCreate)
+	bot.AddHandler(MessageCreate(api))
 
+	// Create connection to bot
 	err := bot.Open()
 	if err != nil {
-		fmt.Println("Error opening Discord session: ", err)
+		log.Fatal("Error opening Discord session: ", err)
 	}
 
-	PeriodicMessage(bot)
+	// Routine to periodically post messages
+	PeriodicMessage(bot, api)
 
 	// Wait here until CTRL-C or other term signal is received.
+	// TODO Only call this if running in debug mode otherwise create background thread
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
 
 	// Cleanly close down the Discord session.
-	bot.Close()
+	err = bot.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
+// Ready is called upon a ready event and sets the bots status
 func Ready(s *discordgo.Session, _ *discordgo.Ready) {
-	s.UpdateStatus(0, "Catan")
+	err := s.UpdateStatus(0, "") // Add whatever game you want here
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.ID == cfg["VIP"] {
-		switch m.Content {
-		case "!help":
-			s.ChannelMessageSendEmbed(m.ChannelID, embed.NewGenericEmbedAdvanced(
-				"__These awe the x3 suppowted intewactive commands:__",
-				"**!allpullrequests:** Shows the UwU status of aww active puww wequests.\n"+
-					"**!mypullrequests:** Shows the x3 status of youw own active puww wequests.\n"+
-					"**!myreviews:**  Shows aww puww wequests which you'we a weviewew of, nya.\n"+
-					"**!comments:** Shows the x3 comments >w< undew youw active puww *boops your nose* wequests. *(TODO)*",
-				color))
-		case "!allpullrequests":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetAllPullRequestsVIP(api))
-		case "!mypullrequests":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetMyPullRequestsVIP(api, m.Author.ID))
-		case "!myreviews":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetMyReviewsVIP(api, m.Author.ID))
-		case "!comments":
-			s.ChannelMessageSendEmbed(m.ChannelID, embed.NewGenericEmbedAdvanced("*Nyot impwemented yet owo*", "", color))
-		default:
-			return
+// MessageCreate is called upon a received message and conditionally answers it
+func MessageCreate(api *API) func(session *discordgo.Session, message *discordgo.MessageCreate) {
+	// We need to return a function here so we can pass over the api object
+	return func(session *discordgo.Session, message *discordgo.MessageCreate) {
+		var err error
+		// This part is just for shits and giggles
+		if message.Author.ID == cfg["VIP"] {
+			switch message.Content {
+			case "!help":
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, HelpMessageVIP())
+			case "!allpullrequests":
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetAllPullRequestsVIP(api))
+			case "!mypullrequests":
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyPullRequestsVIP(api, message.Author.ID))
+			case "!myreviews":
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyReviewsVIP(api, message.Author.ID))
+			case "!about":
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, AboutMessageVIP())
+			default:
+				return
+			}
+		} else {
+			// This part is the more serious portion of code here
+			switch message.Content {
+			case "!help":
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, HelpMessage())
+			case "!allpullrequests":
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetAllPullRequests(api))
+			case "!mypullrequests":
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyPullRequests(api, message.Author.ID))
+			case "!myreviews":
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyReviews(api, message.Author.ID))
+			case "!about":
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, AboutMessage())
+			default:
+				return
+			}
 		}
-	} else {
-		switch m.Content {
-		case "!help":
-			s.ChannelMessageSendEmbed(m.ChannelID, embed.NewGenericEmbedAdvanced(
-				"__These are the supported interactive commands:__",
-				"**!allpullrequests:** Shows the status of all active pull requests.\n"+
-					"**!mypullrequests:** Shows the status of your own active pull requests.\n"+
-					"**!myreviews:** Shows all pull requests which you're a reviewer of.\n"+
-					"**!comments:** Shows the comments under your active pull requests. *(TODO)*",
-				color))
-		case "!allpullrequests":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetAllPullRequests(api))
-		case "!mypullrequests":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetMyPullRequests(api, m.Author.ID))
-		case "!myreviews":
-			s.ChannelMessageSendEmbed(m.ChannelID, GetMyReviews(api, m.Author.ID))
-		case "!comments":
-			s.ChannelMessageSendEmbed(m.ChannelID, embed.NewGenericEmbedAdvanced("*Not implemented yet*", "", color))
-		default:
-			return
+		if err != nil {
+			log.Println(err)
 		}
 	}
 }
 
-func PeriodicMessage(s *discordgo.Session) {
+// PeriodicMessage conditionally sends a message to a specified channel every 3 minutes
+func PeriodicMessage(session *discordgo.Session, api *API) {
+	var err error
 	for {
-		time.Sleep(5 * time.Minute)
+		time.Sleep(3 * time.Minute)
+		// Only send message if there are actual news
 		if CheckNewPullRequest(api) {
-			s.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], NewPullRequestCreated(api))
-			s.ChannelMessageSend(cfg["PING_CHANNEL"], NewPullRequestPing(api))
+			_, err = session.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], NewPullRequestCreated(api))
+			_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], NewPullRequestPing(api))
+			if err != nil {
+				log.Println(err)
+			}
 		}
 	}
 }

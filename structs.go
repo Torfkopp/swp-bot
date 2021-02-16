@@ -27,7 +27,9 @@ type Values struct {
 	CreatedDate int64      `json:"createdDate"`
 	Author      Author     `json:"author"`
 	UpdatedDate int64      `json:"updatedDate"`
+	ClosedDate  int64      `json:"closedDate"`
 	Description string     `json:"description"`
+	Properties  Properties `json:"properties"`
 	Reviewers   []Reviewer `json:"reviewers"`
 	Title       string     `json:"title"`
 	Links       Links      `json:"links"`
@@ -53,6 +55,10 @@ type User struct {
 	Mail        string `json:"emailAddress"`
 	DisplayName string `json:"displayName"`
 	Links       Links  `json:"links"`
+}
+
+type Properties struct {
+	CommentCount int `json:"commentCount"`
 }
 
 // Links defines hyperlink information

@@ -9,16 +9,18 @@ import (
 )
 
 // Request implements the basic Request function
-func (a *API) Request(req *http.Request) ([]byte, error) {
-	req.Header.Add("Accept", "application/json, */*")
+func (api *API) Request(request *http.Request) ([]byte, error) {
+	// Add necessary header
+	request.Header.Add("Accept", "application/json, */*")
 
-	a.Auth(req)
+	// Authenticate with endpoint
+	api.Auth(request)
 
 	Debug("====== Request ======")
-	Debug(req)
+	Debug(request)
 	Debug("====== Request Body ======")
-	if DebugFlag {
-		requestDump, err := httputil.DumpRequest(req, true)
+	if debugFlag {
+		requestDump, err := httputil.DumpRequest(request, true)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -27,59 +29,69 @@ func (a *API) Request(req *http.Request) ([]byte, error) {
 	Debug("====== /Request Body ======")
 	Debug("====== /Request ======")
 
-	resp, err := a.client.Do(req)
+	// Actually post the request
+	response, err := api.client.Do(request)
 	if err != nil {
 		return nil, err
 	}
-	Debug(fmt.Sprintf("====== Response Status Code: %d ======", resp.StatusCode))
+	Debug(fmt.Sprintf("====== Response Status Code: %d ======", response.StatusCode))
 
-	res, err := ioutil.ReadAll(resp.Body)
+	// Extract the response body
+	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
-	resp.Body.Close()
+
+	// Close resource now
+	err = response.Body.Close()
+	if err != nil {
+		return nil, err
+	}
 
 	Debug("====== Response Body ======")
-	Debug(string(res))
+	Debug(string(responseBody))
 	Debug("====== /Response Body ======")
 
-	switch resp.StatusCode {
+	// Check which http status code we got and act on it
+	switch response.StatusCode {
 	case http.StatusOK, http.StatusCreated, http.StatusPartialContent:
-		return res, nil
+		return responseBody, nil
 	case http.StatusNoContent, http.StatusResetContent:
 		return nil, nil
 	case http.StatusUnauthorized:
 		return nil, fmt.Errorf("authentication failed")
 	case http.StatusServiceUnavailable:
-		return nil, fmt.Errorf("service is not available: %s", resp.Status)
+		return nil, fmt.Errorf("service is not available: %s", response.Status)
 	case http.StatusInternalServerError:
-		return nil, fmt.Errorf("internal server error: %s", resp.Status)
+		return nil, fmt.Errorf("internal server error: %s", response.Status)
 	case http.StatusConflict:
-		return nil, fmt.Errorf("conflict: %s", resp.Status)
+		return nil, fmt.Errorf("conflict: %s", response.Status)
+	default:
+		return nil, fmt.Errorf("unknown response status: %s", response.Status)
 	}
-
-	return nil, fmt.Errorf("unknown response status: %s", resp.Status)
 }
 
 // GetPullRequestsRequest sends Bitbucket GET requests
-func (a *API) GetPullRequestsRequest() (*Response, error) {
+func (api *API) GetActivePullRequests() (*Response, error) {
 
-	req, err := http.NewRequest("GET", a.endPoint.String(), nil)
+	// Craft a GET request here
+	request, err := http.NewRequest("GET", api.endPoint.String(), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := a.Request(req)
+	// Send the request and save the response
+	response, err := api.Request(request)
 	if err != nil {
 		return nil, err
 	}
 
-	var rev Response
-
-	err = json.Unmarshal(res, &rev)
+	// Parse the response from json into structs
+	var parsed Response
+	err = json.Unmarshal(response, &parsed)
 	if err != nil {
 		return nil, err
 	}
 
-	return &rev, nil
+	return &parsed, nil
 }
