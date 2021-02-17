@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -62,6 +63,9 @@ func MessageCreate(api *API) func(session *discordgo.Session, message *discordgo
 	// We need to return a function here so we can pass over the api object
 	return func(session *discordgo.Session, message *discordgo.MessageCreate) {
 		var err error
+		if strings.HasPrefix(message.Content, "!post ") {
+			_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], PostMessage(message.Content))
+		}
 		// This part is just for shits and giggles
 		if message.Author.ID == cfg["VIP"] {
 			switch message.Content {
@@ -102,6 +106,7 @@ func MessageCreate(api *API) func(session *discordgo.Session, message *discordgo
 }
 
 // PeriodicMessage conditionally sends a message to a specified channel every 3 minutes
+// TODO Make this a non-blocking routine
 func PeriodicMessage(session *discordgo.Session, api *API) {
 	var err error
 	for {

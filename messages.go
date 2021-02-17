@@ -5,6 +5,7 @@ import (
 	"github.com/clinet/discordgo-embed"
 	"log"
 	"strconv"
+	"strings"
 )
 
 // Define the color used in the embeds
@@ -16,6 +17,7 @@ func HelpMessage() *discordgo.MessageEmbed {
 		"**!allpullrequests:** Shows the status of all active pull requests.\n"+
 			"**!mypullrequests:** Shows the status of your own active pull requests.\n"+
 			"**!myreviews:** Shows all pull requests which you're a reviewer of.\n"+
+			"**!post <something>:** Relays your text into the bots channel.\n"+
 			"**!about:** Some info about this bot.",
 		color)
 }
@@ -26,6 +28,11 @@ func AboutMessage() *discordgo.MessageEmbed {
 		"In case of undesired risks and side effects\n"+
 			"please read the [source code](https://github.com/MDr164/swp-bot) or ask your local dev.",
 		color)
+}
+
+// PostMessage strips a string off of its !post command
+func PostMessage(message string) string {
+	return strings.TrimPrefix(message, "!post ")
 }
 
 // NewPullRequestCreated returns the latest pull request

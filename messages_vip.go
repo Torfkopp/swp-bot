@@ -13,6 +13,7 @@ func HelpMessageVIP() *discordgo.MessageEmbed {
 		"**!allpullrequests:** Shows the UwU status of aww active puww wequests.\n"+
 			"**!mypullrequests:** Shows the x3 status of youw own active puww wequests.\n"+
 			"**!myreviews:**  Shows aww puww wequests which you'we a weviewew of, nya.\n"+
+			"**!post <something>:** Weways youw text into the x3 bots *huggles tightly* channyew.\n"+
 			"**!about:** Some info *sweats* about this bot.",
 		color)
 }
