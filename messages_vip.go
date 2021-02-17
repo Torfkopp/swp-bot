@@ -13,6 +13,7 @@ func HelpMessageVIP() *discordgo.MessageEmbed {
 		"**!allpullrequests:** Shows the UwU status of aww active puww wequests.\n"+
 			"**!mypullrequests:** Shows the x3 status of youw own active puww wequests.\n"+
 			"**!myreviews:**  Shows aww puww wequests which you'we a weviewew of, nya.\n"+
+			"**!post <something>:** Weways youw text into the x3 bots *huggles tightly* channyew.\n"+
 			"**!about:** Some info *sweats* about this bot.",
 		color)
 }
@@ -42,7 +43,7 @@ func GetAllPullRequestsVIP(api *API) *discordgo.MessageEmbed {
 		} else {
 			title = "**Active puww wequests:**\n"
 			for i, values := range request.Values {
-				field = ""
+				field = "[*Wweviewews:*](" + values.Links.Self[0].Href + ")\n"
 				for j, reviewer := range values.Reviewers {
 					field = field + strconv.Itoa(j+1) + ". [" + reviewer.User.DisplayName + "](" + reviewer.User.Links.Self[0].Href + ") "
 					userid, present := cfg[reviewer.User.Name]
@@ -56,7 +57,7 @@ func GetAllPullRequestsVIP(api *API) *discordgo.MessageEmbed {
 					}
 				}
 				field = field + "Tweets: " + strconv.Itoa(values.Properties.CommentCount)
-				embedObject.AddField(strconv.Itoa(i+1)+". "+values.Title, "[*Wweviewews:*]("+values.Links.Self[0].Href+")\n"+field)
+				embedObject.AddField(strconv.Itoa(i+1)+". "+values.Title, field)
 			}
 		}
 	} else {
@@ -85,9 +86,9 @@ func GetMyPullRequestsVIP(api *API, rid string) *discordgo.MessageEmbed {
 			username, _ := cfg[rid]
 			title = "**Puww wequests by " + username + ":**\n"
 			i := 0
-			for _, val := range request.Values {
-				if val.Author.User.Name == username {
-					body = body + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
+			for _, values := range request.Values {
+				if values.Author.User.Name == username {
+					body = body + strconv.Itoa(i+1) + ". [" + values.Title + "](" + values.Links.Self[0].Href + ")\n"
 					i++
 				}
 			}
@@ -121,10 +122,10 @@ func GetMyReviewsVIP(api *API, rid string) *discordgo.MessageEmbed {
 			username, _ := cfg[rid]
 			title = "**W-W-Weviews assignyed t-to " + username + ":**\n"
 			i := 0
-			for _, val := range request.Values {
-				for _, rev := range val.Reviewers {
-					if rev.User.Name == username {
-						body = body + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
+			for _, values := range request.Values {
+				for _, reviewer := range values.Reviewers {
+					if reviewer.User.Name == username {
+						body = body + strconv.Itoa(i+1) + ". [" + values.Title + "](" + values.Links.Self[0].Href + ")\n"
 						i++
 					}
 				}
