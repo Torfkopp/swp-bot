@@ -68,9 +68,9 @@ func NewPullRequestPing(api *API) string {
 	request, err := api.GetActivePullRequests()
 	if err == nil {
 		text = "**Pinging Reviewers:**\n"
-		for i, rev := range request.Values[0].Reviewers {
-			text = text + strconv.Itoa(i+1) + ". " + rev.User.DisplayName
-			userid, present := cfg[rev.User.Name]
+		for i, reviewer := range request.Values[0].Reviewers {
+			text = text + strconv.Itoa(i+1) + ". " + reviewer.User.DisplayName
+			userid, present := cfg[reviewer.User.Name]
 			if present {
 				text = text + " <@" + userid + ">\n"
 			} else {
@@ -105,7 +105,7 @@ func GetAllPullRequests(api *API) *discordgo.MessageEmbed {
 		} else {
 			title = "**Active pull requests:**\n"
 			for i, values := range request.Values {
-				field = ""
+				field = "[*Reviewers:*](" + values.Links.Self[0].Href + ")\n"
 				for j, reviewer := range values.Reviewers {
 					field = field + strconv.Itoa(j+1) + ". [" + reviewer.User.DisplayName + "](" + reviewer.User.Links.Self[0].Href + ") "
 					userid, present := cfg[reviewer.User.Name]
@@ -119,7 +119,7 @@ func GetAllPullRequests(api *API) *discordgo.MessageEmbed {
 					}
 				}
 				field = field + "Comments: " + strconv.Itoa(values.Properties.CommentCount)
-				embedObject.AddField(strconv.Itoa(i+1)+". "+values.Title, "[*Reviewers:*]("+values.Links.Self[0].Href+")\n"+field)
+				embedObject.AddField(strconv.Itoa(i+1)+". "+values.Title, field)
 			}
 		}
 	} else {
@@ -152,9 +152,9 @@ func GetMyPullRequests(api *API, rid string) *discordgo.MessageEmbed {
 			if present {
 				title = "**Pull requests by " + username + ":**\n"
 				i := 0
-				for _, val := range request.Values {
-					if val.Author.User.Name == username {
-						body = body + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
+				for _, values := range request.Values {
+					if values.Author.User.Name == username {
+						body = body + strconv.Itoa(i+1) + ". [" + values.Title + "](" + values.Links.Self[0].Href + ")\n"
 						i++
 					}
 				}
@@ -195,10 +195,10 @@ func GetMyReviews(api *API, rid string) *discordgo.MessageEmbed {
 			if present {
 				title = "**Reviews assigned to " + username + ":**\n"
 				i := 0
-				for _, val := range request.Values {
-					for _, rev := range val.Reviewers {
-						if rev.User.Name == username {
-							body = body + strconv.Itoa(i+1) + ". [" + val.Title + "](" + val.Links.Self[0].Href + ")\n"
+				for _, values := range request.Values {
+					for _, reviewer := range values.Reviewers {
+						if reviewer.User.Name == username {
+							body = body + strconv.Itoa(i+1) + ". [" + values.Title + "](" + values.Links.Self[0].Href + ")\n"
 							i++
 						}
 					}

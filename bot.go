@@ -64,7 +64,7 @@ func MessageCreate(api *API) func(session *discordgo.Session, message *discordgo
 	return func(session *discordgo.Session, message *discordgo.MessageCreate) {
 		var err error
 		if strings.HasPrefix(message.Content, "!post ") {
-			_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], PostMessage(message.Content))
+			_, err = session.ChannelMessageSend(cfg["RELAY_CHANNEL"], PostMessage(message.Content))
 		}
 		// This part is just for shits and giggles
 		if message.Author.ID == cfg["VIP"] {
