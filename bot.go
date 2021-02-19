@@ -22,10 +22,12 @@ func SessionCreate(token string) *discordgo.Session {
 }
 
 // StartBot adds event handlers and starts the main bot function
-func StartBot(bot *discordgo.Session, api *API) {
+func StartBot(bot *discordgo.Session, bAPI1 *API, jAPI *API) {
+	JiraTest(jAPI)
+
 	// Register events
 	bot.AddHandler(Ready)
-	bot.AddHandler(MessageCreate(api))
+	bot.AddHandler(MessageCreate(bAPI1))
 
 	// Create connection to bot
 	err := bot.Open()
@@ -34,7 +36,7 @@ func StartBot(bot *discordgo.Session, api *API) {
 	}
 
 	// Routine to periodically post messages
-	PeriodicMessage(bot, api)
+	PeriodicMessage(bot, bAPI1)
 
 	// Wait here until CTRL-C or other term signal is received.
 	// TODO Only call this if running in debug mode otherwise create background thread

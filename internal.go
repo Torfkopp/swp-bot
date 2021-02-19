@@ -16,7 +16,7 @@ import (
 )
 
 // NewAPI implements API constructor
-func NewAPI(location string, token string) (*API, error) {
+func NewAPI(location string, token string, tokenType int) (*API, error) {
 	// Check if url isn't empty
 	if len(location) == 0 {
 		return nil, errors.New("url empty")
@@ -31,6 +31,7 @@ func NewAPI(location string, token string) (*API, error) {
 	// Create new API object
 	api := new(API)
 	api.endPoint = endPoint
+	api.tokenType = tokenType
 	api.token = token
 
 	// Make sure we use a valid and secure connection
@@ -45,11 +46,15 @@ func NewAPI(location string, token string) (*API, error) {
 }
 
 // Auth implements token auth
-func (api *API) Auth(req *http.Request) {
+func (api *API) Auth(request *http.Request) {
 	// Supports unauthenticated access as well:
 	// If token is not set, no authorization header is added
-	if api.token != "" {
-		req.Header.Set("Authorization", "Bearer "+api.token)
+	if api.tokenType == 1 && api.token != "" {
+		request.Header.Set("Authorization", "Bearer "+api.token)
+	}
+	if api.tokenType == 2 && api.token != "" {
+		request.Header.Set("Authorization", "Basic "+api.token)
+		request.Header.Set("Content-Type", "application/json")
 	}
 }
 
@@ -81,11 +86,11 @@ func ReadConfig() map[string]string {
 // CheckNewPullRequest compares the date of the latest pull request with an internal variable
 func CheckNewPullRequest(api *API) bool {
 	// Craft a GET request
-	req, err := api.GetActivePullRequests()
+	request, err := api.GetActivePullRequests()
 	// Only run if no error occurred yet
 	if err == nil {
 		// Return false if there are open PRs
-		if req != nil && len(req.Values) == 0 {
+		if request != nil && len(request.Values) == 0 {
 			return false
 		} else {
 			// Read contents of the timestamp file
@@ -104,8 +109,8 @@ func CheckNewPullRequest(api *API) bool {
 			}
 
 			// Compare the timestamp of the latest PR with our previous timestamp
-			if req.Values[0].CreatedDate > n {
-				n = req.Values[0].CreatedDate
+			if request.Values[0].CreatedDate > n {
+				n = request.Values[0].CreatedDate
 
 				// Open the timestamp file for writing here
 				file, err := os.OpenFile(timestampFile, os.O_WRONLY, 0600)
@@ -142,5 +147,16 @@ func CheckNewPullRequest(api *API) bool {
 func Debug(msg interface{}) {
 	if debugFlag {
 		log.Printf("%+v\n", msg)
+	}
+}
+
+func JiraTest(api *API) {
+	request, err := api.GetActivePullRequests()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if request.Size == 1 {
+		fmt.Println("wow")
 	}
 }

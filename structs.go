@@ -7,9 +7,10 @@ import (
 
 // API is the main api data structure
 type API struct {
-	endPoint *url.URL
-	client   *http.Client
-	token    string
+	endPoint  *url.URL
+	client    *http.Client
+	token     string
+	tokenType int
 }
 
 // Response defines the information sent via the REST-API
