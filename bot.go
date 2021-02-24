@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-	"time"
 )
 
 // SessionCreate creates a new Discord session
@@ -22,9 +21,7 @@ func SessionCreate(token string) *discordgo.Session {
 }
 
 // StartBot adds event handlers and starts the main bot function
-func StartBot(bot *discordgo.Session, bAPI1 *API, jAPI *API) {
-	JiraTest(jAPI)
-
+func StartBot(bot *discordgo.Session, bAPI1 *API, bAPI2 *API) {
 	// Register events
 	bot.AddHandler(Ready)
 	bot.AddHandler(MessageCreate(bAPI1))
@@ -35,8 +32,8 @@ func StartBot(bot *discordgo.Session, bAPI1 *API, jAPI *API) {
 		log.Fatal("Error opening Discord session: ", err)
 	}
 
-	// Routine to periodically post messages
-	PeriodicMessage(bot, bAPI1)
+	// Routine to listen to webhooks
+	go ReceiveBitbucketWebhook(bot)
 
 	// Wait here until CTRL-C or other term signal is received.
 	// TODO Only call this if running in debug mode otherwise create background thread
@@ -103,23 +100,6 @@ func MessageCreate(api *API) func(session *discordgo.Session, message *discordgo
 		}
 		if err != nil {
 			log.Println(err)
-		}
-	}
-}
-
-// PeriodicMessage conditionally sends a message to a specified channel every 3 minutes
-// TODO Make this a non-blocking routine
-func PeriodicMessage(session *discordgo.Session, api *API) {
-	var err error
-	for {
-		time.Sleep(3 * time.Minute)
-		// Only send message if there are actual news
-		if CheckNewPullRequest(api) {
-			_, err = session.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], NewPullRequestCreated(api))
-			_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], NewPullRequestPing(api))
-			if err != nil {
-				log.Println(err)
-			}
 		}
 	}
 }

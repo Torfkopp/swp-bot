@@ -4,14 +4,12 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io/ioutil"
+	"github.com/bwmarrin/discordgo"
+	bitbucketserver "github.com/go-playground/webhooks/bitbucket-server"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -83,63 +81,44 @@ func ReadConfig() map[string]string {
 	return cfg
 }
 
-// CheckNewPullRequest compares the date of the latest pull request with an internal variable
-func CheckNewPullRequest(api *API) bool {
-	// Craft a GET request
-	request, err := api.GetActivePullRequests()
-	// Only run if no error occurred yet
-	if err == nil {
-		// Return false if there are open PRs
-		if request != nil && len(request.Values) == 0 {
-			return false
-		} else {
-			// Read contents of the timestamp file
-			timestamp, err := ioutil.ReadFile(timestampFile)
-			if err != nil {
-				log.Println(err)
-			}
+func ReceiveBitbucketWebhook(session *discordgo.Session) {
+	hook, _ := bitbucketserver.New()
 
-			// Trim the newline character to avoid trouble later
-			timestampCleaned := strings.TrimSuffix(string(timestamp), "\n")
-
-			// Parse the timestamp into a variable
-			n, err := strconv.ParseInt(timestampCleaned, 10, 64)
-			if err != nil {
-				log.Println(err)
-			}
-
-			// Compare the timestamp of the latest PR with our previous timestamp
-			if request.Values[0].CreatedDate > n {
-				n = request.Values[0].CreatedDate
-
-				// Open the timestamp file for writing here
-				file, err := os.OpenFile(timestampFile, os.O_WRONLY, 0600)
-				if err != nil {
-					fmt.Println(err)
-				}
-
-				// Defer file closure so it runs after the return
-				defer func() {
-					err = file.Close()
-					if err != nil {
-						log.Fatal(err)
-					}
-				}()
-
-				// Overwrite the timestamp in our file with the latest recorded one
-				_, err = file.WriteString(strconv.FormatInt(n, 10))
-				if err != nil {
-					log.Println(err)
-				}
-
-				return true
-			} else {
-				return false
-			}
+	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		payload, err := hook.Parse(request,
+			bitbucketserver.PullRequestOpenedEvent,
+			bitbucketserver.PullRequestMergedEvent,
+			bitbucketserver.PullRequestCommentAddedEvent,
+			bitbucketserver.PullRequestReviewerApprovedEvent,
+			bitbucketserver.PullRequestReviewerNeedsWorkEvent)
+		if err != nil {
+			log.Println(err)
 		}
-	} else {
-		log.Println(err)
-		return false
+		switch payload.(type) {
+		case bitbucketserver.PullRequestOpenedPayload:
+			event := payload.(bitbucketserver.PullRequestOpenedPayload)
+			_, err = session.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], NewPullRequestCreated(event))
+			_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], NewPullRequestPing(event))
+		case bitbucketserver.PullRequestMergedPayload:
+			event := payload.(bitbucketserver.PullRequestMergedPayload)
+			_, err = session.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], PullRequestMerged(event))
+		case bitbucketserver.PullRequestCommentAddedPayload:
+			event := payload.(bitbucketserver.PullRequestCommentAddedPayload)
+			_, err = session.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], NewComment(event))
+		case bitbucketserver.PullRequestReviewerApprovedPayload:
+			event := payload.(bitbucketserver.PullRequestReviewerApprovedPayload)
+			_, err = session.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], PullRequestApproved(event))
+		case bitbucketserver.PullRequestReviewerNeedsWorkPayload:
+			event := payload.(bitbucketserver.PullRequestReviewerNeedsWorkPayload)
+			_, err = session.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], PullRequestNeedsWork(event))
+		}
+		if err != nil {
+			log.Println(err)
+		}
+	})
+	err := http.ListenAndServe(":"+listenPort, nil)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -147,16 +126,5 @@ func CheckNewPullRequest(api *API) bool {
 func Debug(msg interface{}) {
 	if debugFlag {
 		log.Printf("%+v\n", msg)
-	}
-}
-
-func JiraTest(api *API) {
-	request, err := api.GetActivePullRequests()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	if request.Size == 1 {
-		fmt.Println("wow")
 	}
 }

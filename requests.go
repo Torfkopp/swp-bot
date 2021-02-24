@@ -95,26 +95,3 @@ func (api *API) GetActivePullRequests() (*Response, error) {
 
 	return &parsed, nil
 }
-
-func (api *API) GetJiraData() (*Response, error) {
-	// Craft a GET request here
-	request, err := http.NewRequest("GET", api.endPoint.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Send the request and save the response
-	response, err := api.Request(request)
-	if err != nil {
-		return nil, err
-	}
-
-	// Parse the response from json into structs
-	var parsed Response
-	err = json.Unmarshal(response, &parsed)
-	if err != nil {
-		return nil, err
-	}
-
-	return &parsed, nil
-}

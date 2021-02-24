@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/clinet/discordgo-embed"
+	bitbucketserver "github.com/go-playground/webhooks/bitbucket-server"
 	"log"
 	"strconv"
 	"strings"
@@ -36,24 +37,13 @@ func PostMessage(message string) string {
 }
 
 // NewPullRequestCreated returns the latest pull request
-func NewPullRequestCreated(api *API) *discordgo.MessageEmbed {
-	var (
-		title string
-		body  string
-	)
+func NewPullRequestCreated(event bitbucketserver.PullRequestOpenedPayload) *discordgo.MessageEmbed {
 
 	// Create an empty embed with a predefined color
 	embedObject := embed.NewEmbed().SetColor(color)
 
-	// Make a request to Bitbucket and iterate over it to fill title and body
-	request, err := api.GetActivePullRequests()
-	if err == nil {
-		title = "**New pull request:**\n"
-		body = "[" + request.Values[0].Title + "](" + request.Values[0].Links.Self[0].Href + ")"
-	} else {
-		title = "**Request returned no data!**"
-		log.Println(err)
-	}
+	title := "**New pull request:**"
+	body := "[" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].(Self).Href + ")"
 
 	// Add title and body previously populated to the embed and return it
 	embedObject.SetTitle(title).SetDescription(body)
@@ -61,29 +51,70 @@ func NewPullRequestCreated(api *API) *discordgo.MessageEmbed {
 }
 
 // NewPullRequestPing returns a string containing the reviewers of the latest pull request
-func NewPullRequestPing(api *API) string {
-	var text string
+func NewPullRequestPing(event bitbucketserver.PullRequestOpenedPayload) string {
 
-	// Make a request to Bitbucket and iterate over it to fill text
-	request, err := api.GetActivePullRequests()
-	if err == nil {
-		text = "**Pinging Reviewers:**\n"
-		for i, reviewer := range request.Values[0].Reviewers {
-			text = text + strconv.Itoa(i+1) + ". " + reviewer.User.DisplayName
-			userid, present := cfg[reviewer.User.Name]
-			if present {
-				text = text + " <@" + userid + ">\n"
-			} else {
-				text = text + "\n"
-			}
+	text := "**Pinging Reviewers:**\n"
+	for i, reviewer := range event.PullRequest.Reviewers {
+		text = text + strconv.Itoa(i+1) + ". " + reviewer.User.DisplayName
+		userid, present := cfg[reviewer.User.Name]
+		if present {
+			text = text + " <@" + userid + ">\n"
+		} else {
+			text = text + "\n"
 		}
-	} else {
-		text = "**Request returned no data!**"
-		log.Println(err)
 	}
-
 	// As pings in Discord don't work in embeds, we need to return a simple string
 	return text
+}
+
+func PullRequestMerged(event bitbucketserver.PullRequestMergedPayload) *discordgo.MessageEmbed {
+	// Create an empty embed with a predefined color
+	embedObject := embed.NewEmbed().SetColor(color)
+
+	title := "**A pull request was merged:**"
+	body := "[" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].(Self).Href + ")"
+
+	// Add title and body previously populated to the embed and return it
+	embedObject.SetTitle(title).SetDescription(body)
+	return embedObject.MessageEmbed
+}
+
+func NewComment(event bitbucketserver.PullRequestCommentAddedPayload) *discordgo.MessageEmbed {
+	// Create an empty embed with a predefined color
+	embedObject := embed.NewEmbed().SetColor(color)
+
+	title := "**A new comment was added:**"
+	body := "In PR [" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].(Self).Href + ") " +
+		event.Comment.Author.DisplayName + " wrote: " + event.Comment.Text
+
+	// Add title and body previously populated to the embed and return it
+	embedObject.SetTitle(title).SetDescription(body)
+	return embedObject.MessageEmbed
+}
+
+func PullRequestApproved(event bitbucketserver.PullRequestReviewerApprovedPayload) *discordgo.MessageEmbed {
+	// Create an empty embed with a predefined color
+	embedObject := embed.NewEmbed().SetColor(color)
+
+	title := "**New review:**"
+	body := "Someone approved [" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].(Self).Href + ")"
+
+	// Add title and body previously populated to the embed and return it
+	embedObject.SetTitle(title).SetDescription(body)
+	return embedObject.MessageEmbed
+}
+
+func PullRequestNeedsWork(event bitbucketserver.PullRequestReviewerNeedsWorkPayload) *discordgo.MessageEmbed {
+	// Create an empty embed with a predefined color
+	embedObject := embed.NewEmbed().SetColor(color)
+
+	title := "**New review:**"
+	body := "This PR: [" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].(Self).Href + ") " +
+		"needs work!"
+
+	// Add title and body previously populated to the embed and return it
+	embedObject.SetTitle(title).SetDescription(body)
+	return embedObject.MessageEmbed
 }
 
 // GetAllPullRequests returns all currently active pull requests from the rest response
