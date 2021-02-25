@@ -43,7 +43,7 @@ func NewPullRequestCreated(event bitbucketserver.PullRequestOpenedPayload) *disc
 	embedObject := embed.NewEmbed().SetColor(color)
 
 	title := "**New pull request:**"
-	body := "[" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].(Self).Href + ")"
+	body := "[" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].([]interface{})[0].(map[string]interface{})["href"].(string) + ")"
 
 	// Add title and body previously populated to the embed and return it
 	embedObject.SetTitle(title).SetDescription(body)
@@ -72,7 +72,7 @@ func PullRequestMerged(event bitbucketserver.PullRequestMergedPayload) *discordg
 	embedObject := embed.NewEmbed().SetColor(color)
 
 	title := "**A pull request was merged:**"
-	body := "[" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].(Self).Href + ")"
+	body := "[" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].([]interface{})[0].(map[string]interface{})["href"].(string) + ")"
 
 	// Add title and body previously populated to the embed and return it
 	embedObject.SetTitle(title).SetDescription(body)
@@ -84,7 +84,7 @@ func NewComment(event bitbucketserver.PullRequestCommentAddedPayload) *discordgo
 	embedObject := embed.NewEmbed().SetColor(color)
 
 	title := "**A new comment was added:**"
-	body := "In PR [" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].(Self).Href + ") " +
+	body := "In PR [" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].([]interface{})[0].(map[string]interface{})["href"].(string) + ") " +
 		event.Comment.Author.DisplayName + " wrote: " + event.Comment.Text
 
 	// Add title and body previously populated to the embed and return it
@@ -97,7 +97,7 @@ func PullRequestApproved(event bitbucketserver.PullRequestReviewerApprovedPayloa
 	embedObject := embed.NewEmbed().SetColor(color)
 
 	title := "**New review:**"
-	body := "Someone approved [" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].(Self).Href + ")"
+	body := "Someone approved [" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].([]interface{})[0].(map[string]interface{})["href"].(string) + ")"
 
 	// Add title and body previously populated to the embed and return it
 	embedObject.SetTitle(title).SetDescription(body)
@@ -109,7 +109,7 @@ func PullRequestNeedsWork(event bitbucketserver.PullRequestReviewerNeedsWorkPayl
 	embedObject := embed.NewEmbed().SetColor(color)
 
 	title := "**New review:**"
-	body := "This PR: [" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].(Self).Href + ") " +
+	body := "This PR: [" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].([]interface{})[0].(map[string]interface{})["href"].(string) + ") " +
 		"needs work!"
 
 	// Add title and body previously populated to the embed and return it

@@ -112,7 +112,7 @@ func ReceiveBitbucketWebhook(session *discordgo.Session) {
 			event := payload.(bitbucketserver.PullRequestReviewerNeedsWorkPayload)
 			_, err = session.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], PullRequestNeedsWork(event))
 		}
-		if err != nil {
+		if err != nil || err != bitbucketserver.ErrEventNotSpecifiedToParse {
 			log.Println(err)
 		}
 	})
