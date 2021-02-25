@@ -36,7 +36,7 @@ func GetAllPullRequestsVIP(api *API) *discordgo.MessageEmbed {
 
 	embedObject := embed.NewEmbed().SetColor(color)
 
-	request, err := api.GetActivePullRequests()
+	request, err := api.GetPullRequests()
 	if err == nil {
 		if len(request.Values) == 0 {
 			title = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
@@ -78,7 +78,7 @@ func GetMyPullRequestsVIP(api *API, rid string) *discordgo.MessageEmbed {
 
 	embedObject := embed.NewEmbed().SetColor(color)
 
-	request, err := api.GetActivePullRequests()
+	request, err := api.GetPullRequests()
 	if err == nil {
 		if len(request.Values) == 0 {
 			title = "**Thewe awe nyo active puww wequests!** *huggles tightly*"
@@ -114,7 +114,7 @@ func GetMyReviewsVIP(api *API, rid string) *discordgo.MessageEmbed {
 
 	embedObject := embed.NewEmbed().SetColor(color)
 
-	request, err := api.GetActivePullRequests()
+	request, err := api.GetPullRequests()
 	if err == nil {
 		if len(request.Values) == 0 {
 			title = "**Thewe awe nyo active puww wequests!** *huggles tightly*"

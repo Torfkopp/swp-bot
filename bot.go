@@ -21,10 +21,10 @@ func SessionCreate(token string) *discordgo.Session {
 }
 
 // StartBot adds event handlers and starts the main bot function
-func StartBot(bot *discordgo.Session, bAPI1 *API, bAPI2 *API) {
+func StartBot(bot *discordgo.Session, bitbucketAPI1 *API, bitbucketAPI2 *API, jiraAPI1 *API) {
 	// Register events
 	bot.AddHandler(Ready)
-	bot.AddHandler(MessageCreate(bAPI1))
+	bot.AddHandler(MessageCreate(bitbucketAPI1, bitbucketAPI2, jiraAPI1))
 
 	// Create connection to bot
 	err := bot.Open()
@@ -50,15 +50,15 @@ func StartBot(bot *discordgo.Session, bAPI1 *API, bAPI2 *API) {
 }
 
 // Ready is called upon a ready event and sets the bots status
-func Ready(s *discordgo.Session, _ *discordgo.Ready) {
-	err := s.UpdateStatus(0, "") // Add whatever game you want here
+func Ready(session *discordgo.Session, _ *discordgo.Ready) {
+	err := session.UpdateStatus(0, "") // Add whatever game you want here
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 // MessageCreate is called upon a received message and conditionally answers it
-func MessageCreate(api *API) func(session *discordgo.Session, message *discordgo.MessageCreate) {
+func MessageCreate(bitbucketAPI1 *API, bitbucketAPI2 *API, jiraAPI1 *API) func(session *discordgo.Session, message *discordgo.MessageCreate) {
 	// We need to return a function here so we can pass over the api object
 	return func(session *discordgo.Session, message *discordgo.MessageCreate) {
 		var err error
@@ -71,11 +71,11 @@ func MessageCreate(api *API) func(session *discordgo.Session, message *discordgo
 			case "!help":
 				_, err = session.ChannelMessageSendEmbed(message.ChannelID, HelpMessageVIP())
 			case "!allpullrequests":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetAllPullRequestsVIP(api))
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetAllPullRequestsVIP(bitbucketAPI1))
 			case "!mypullrequests":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyPullRequestsVIP(api, message.Author.ID))
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyPullRequestsVIP(bitbucketAPI1, message.Author.ID))
 			case "!myreviews":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyReviewsVIP(api, message.Author.ID))
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyReviewsVIP(bitbucketAPI1, message.Author.ID))
 			case "!about":
 				_, err = session.ChannelMessageSendEmbed(message.ChannelID, AboutMessageVIP())
 			default:
@@ -87,11 +87,13 @@ func MessageCreate(api *API) func(session *discordgo.Session, message *discordgo
 			case "!help":
 				_, err = session.ChannelMessageSendEmbed(message.ChannelID, HelpMessage())
 			case "!allpullrequests":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetAllPullRequests(api))
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetAllPullRequests(bitbucketAPI1))
 			case "!mypullrequests":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyPullRequests(api, message.Author.ID))
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyPullRequests(bitbucketAPI1, message.Author.ID))
 			case "!myreviews":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyReviews(api, message.Author.ID))
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyReviews(bitbucketAPI1, message.Author.ID))
+			//case "!sprint":
+			//	_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetActiveSprintMessage(jiraAPI1))
 			case "!about":
 				_, err = session.ChannelMessageSendEmbed(message.ChannelID, AboutMessage())
 			default:

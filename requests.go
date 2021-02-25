@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/valyala/fastjson"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httputil"
 )
@@ -71,8 +73,8 @@ func (api *API) Request(request *http.Request) ([]byte, error) {
 	}
 }
 
-// GetPullRequestsRequest sends Bitbucket GET requests
-func (api *API) GetActivePullRequests() (*Response, error) {
+// GetPullRequests sends Bitbucket GET requests
+func (api *API) GetPullRequests() (*Response, error) {
 
 	// Craft a GET request here
 	request, err := http.NewRequest("GET", api.endPoint.String(), nil)
@@ -93,5 +95,34 @@ func (api *API) GetActivePullRequests() (*Response, error) {
 		return nil, err
 	}
 
+	return &parsed, nil
+}
+
+// This is considered WIP, don't use
+func (api *API) GetActiveSprint() (*Response, error) {
+
+	// Craft a GET request here
+	request, err := http.NewRequest("GET", api.endPoint.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Send the request and save the response
+	response, err := api.Request(request)
+	if err != nil {
+		return nil, err
+	}
+
+	var parser fastjson.Parser
+
+	values, err := parser.ParseBytes(response)
+	if err != nil {
+		log.Println(err)
+	}
+
+	sprintID := values.GetInt("values", string(rune(len(values.GetArray("values"))-1)), "id")
+	fmt.Println(sprintID)
+
+	var parsed Response
 	return &parsed, nil
 }

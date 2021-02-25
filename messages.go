@@ -15,7 +15,8 @@ const color = 4616416
 // HelpMessage returns an embed containing an info text about the supported commands
 func HelpMessage() *discordgo.MessageEmbed {
 	return embed.NewGenericEmbedAdvanced("__These are the supported interactive commands:__",
-		"**!allpullrequests:** Shows the status of all active pull requests.\n"+
+		"**!help:** Shows this help text.\n"+
+			"**!allpullrequests:** Shows the status of all active pull requests.\n"+
 			"**!mypullrequests:** Shows the status of your own active pull requests.\n"+
 			"**!myreviews:** Shows all pull requests which you're a reviewer of.\n"+
 			"**!post <something>:** Relays your text into the bots channel.\n"+
@@ -31,7 +32,7 @@ func AboutMessage() *discordgo.MessageEmbed {
 		color)
 }
 
-// PostMessage strips a string off of its !post command
+// PostMessage strips a string off of its "!post" command
 func PostMessage(message string) string {
 	return strings.TrimPrefix(message, "!post ")
 }
@@ -42,6 +43,7 @@ func NewPullRequestCreated(event bitbucketserver.PullRequestOpenedPayload) *disc
 	// Create an empty embed with a predefined color
 	embedObject := embed.NewEmbed().SetColor(color)
 
+	// Populate title and body from the data extracted of the event
 	title := "**New pull request:**"
 	body := "[" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].([]interface{})[0].(map[string]interface{})["href"].(string) + ")"
 
@@ -52,7 +54,7 @@ func NewPullRequestCreated(event bitbucketserver.PullRequestOpenedPayload) *disc
 
 // NewPullRequestPing returns a string containing the reviewers of the latest pull request
 func NewPullRequestPing(event bitbucketserver.PullRequestOpenedPayload) string {
-
+	// Populate title and body from the data extracted of the event
 	text := "**Pinging Reviewers:**\n"
 	for i, reviewer := range event.PullRequest.Reviewers {
 		text = text + strconv.Itoa(i+1) + ". " + reviewer.User.DisplayName
@@ -67,10 +69,12 @@ func NewPullRequestPing(event bitbucketserver.PullRequestOpenedPayload) string {
 	return text
 }
 
+// PullRequestMerged returns the merged pull request
 func PullRequestMerged(event bitbucketserver.PullRequestMergedPayload) *discordgo.MessageEmbed {
 	// Create an empty embed with a predefined color
 	embedObject := embed.NewEmbed().SetColor(color)
 
+	// Populate title and body from the data extracted of the event
 	title := "**A pull request was merged:**"
 	body := "[" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].([]interface{})[0].(map[string]interface{})["href"].(string) + ")"
 
@@ -79,10 +83,12 @@ func PullRequestMerged(event bitbucketserver.PullRequestMergedPayload) *discordg
 	return embedObject.MessageEmbed
 }
 
+// NewComment returns the commented pull request, the commenter and the comment itself
 func NewComment(event bitbucketserver.PullRequestCommentAddedPayload) *discordgo.MessageEmbed {
 	// Create an empty embed with a predefined color
 	embedObject := embed.NewEmbed().SetColor(color)
 
+	// Populate title and body from the data extracted of the event
 	title := "**A new comment was added:**"
 	body := "In PR [" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].([]interface{})[0].(map[string]interface{})["href"].(string) + ") " +
 		event.Comment.Author.DisplayName + " wrote: " + event.Comment.Text
@@ -92,10 +98,12 @@ func NewComment(event bitbucketserver.PullRequestCommentAddedPayload) *discordgo
 	return embedObject.MessageEmbed
 }
 
+// PullRequestApproved returns the approved pull request
 func PullRequestApproved(event bitbucketserver.PullRequestReviewerApprovedPayload) *discordgo.MessageEmbed {
 	// Create an empty embed with a predefined color
 	embedObject := embed.NewEmbed().SetColor(color)
 
+	// Populate title and body from the data extracted of the event
 	title := "**New review:**"
 	body := "Someone approved [" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].([]interface{})[0].(map[string]interface{})["href"].(string) + ")"
 
@@ -104,10 +112,12 @@ func PullRequestApproved(event bitbucketserver.PullRequestReviewerApprovedPayloa
 	return embedObject.MessageEmbed
 }
 
+// PullRequestNeedsWork returns the pull request that needs work
 func PullRequestNeedsWork(event bitbucketserver.PullRequestReviewerNeedsWorkPayload) *discordgo.MessageEmbed {
 	// Create an empty embed with a predefined color
 	embedObject := embed.NewEmbed().SetColor(color)
 
+	// Populate title and body from the data extracted of the event
 	title := "**New review:**"
 	body := "This PR: [" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].([]interface{})[0].(map[string]interface{})["href"].(string) + ") " +
 		"needs work!"
@@ -129,7 +139,7 @@ func GetAllPullRequests(api *API) *discordgo.MessageEmbed {
 	embedObject := embed.NewEmbed().SetColor(color)
 
 	// Make a request to Bitbucket and iterate over it to fill title and field
-	request, err := api.GetActivePullRequests()
+	request, err := api.GetPullRequests()
 	if err == nil {
 		if len(request.Values) == 0 {
 			title = "**There are no active pull requests!**"
@@ -174,7 +184,7 @@ func GetMyPullRequests(api *API, rid string) *discordgo.MessageEmbed {
 	embedObject := embed.NewEmbed().SetColor(color)
 
 	// Make a request to Bitbucket and iterate over it to fill title and body
-	request, err := api.GetActivePullRequests()
+	request, err := api.GetPullRequests()
 	if err == nil {
 		if len(request.Values) == 0 {
 			title = "**There are no active pull requests!**"
@@ -186,6 +196,19 @@ func GetMyPullRequests(api *API, rid string) *discordgo.MessageEmbed {
 				for _, values := range request.Values {
 					if values.Author.User.Name == username {
 						body = body + strconv.Itoa(i+1) + ". [" + values.Title + "](" + values.Links.Self[0].Href + ")\n"
+						for j, reviewer := range values.Reviewers {
+							body = body + strconv.Itoa(j+1) + ". [" + reviewer.User.DisplayName + "](" + reviewer.User.Links.Self[0].Href + ") "
+							userid, present := cfg[reviewer.User.Name]
+							if present {
+								body = body + "<@" + userid + "> "
+							}
+							if reviewer.Approved {
+								body = body + "APPROVED!\n"
+							} else {
+								body = body + "\n"
+							}
+						}
+						body = body + "Comments: " + strconv.Itoa(values.Properties.CommentCount)
 						i++
 					}
 				}
@@ -193,7 +216,7 @@ func GetMyPullRequests(api *API, rid string) *discordgo.MessageEmbed {
 					body = "*None*"
 				}
 			} else {
-				title = "*Couldn'title map your Discord ID to api Bitbucket user!*"
+				title = "*Couldn't map your Discord ID to a Bitbucket user!*"
 			}
 		}
 	} else {
@@ -217,7 +240,7 @@ func GetMyReviews(api *API, rid string) *discordgo.MessageEmbed {
 	embedObject := embed.NewEmbed().SetColor(color)
 
 	// Make a request to Bitbucket and iterate over it to fill title and body
-	request, err := api.GetActivePullRequests()
+	request, err := api.GetPullRequests()
 	if err == nil {
 		if len(request.Values) == 0 {
 			title = "**There are no active pull requests!**"
@@ -238,13 +261,30 @@ func GetMyReviews(api *API, rid string) *discordgo.MessageEmbed {
 					body = "*None*"
 				}
 			} else {
-				title = "*Couldn'title map your Discord ID to api Bitbucket user!*"
+				title = "*Couldn't map your Discord ID to a Bitbucket user!*"
 			}
 		}
 	} else {
 		title = "**Request returned no data!**"
 		log.Println(err)
 	}
+
+	// Add title and body previously populated to the embed and return it
+	embedObject.SetTitle(title).SetDescription(body)
+	return embedObject.MessageEmbed
+}
+
+// This is considered WIP, don't use
+func GetActiveSprintMessage(api *API) *discordgo.MessageEmbed {
+	var (
+		title string
+		body  string
+	)
+
+	// Create an empty embed with a predefined color
+	embedObject := embed.NewEmbed().SetColor(color)
+
+	// New code here
 
 	// Add title and body previously populated to the embed and return it
 	embedObject.SetTitle(title).SetDescription(body)
