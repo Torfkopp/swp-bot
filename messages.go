@@ -83,21 +83,6 @@ func PullRequestMerged(event bitbucketserver.PullRequestMergedPayload) *discordg
 	return embedObject.MessageEmbed
 }
 
-// NewComment returns the commented pull request, the commenter and the comment itself
-func NewComment(event bitbucketserver.PullRequestCommentAddedPayload) *discordgo.MessageEmbed {
-	// Create an empty embed with a predefined color
-	embedObject := embed.NewEmbed().SetColor(color)
-
-	// Populate title and body from the data extracted of the event
-	title := "**A new comment was added:**"
-	body := "In PR [" + event.PullRequest.Title + "](" + event.PullRequest.Links["self"].([]interface{})[0].(map[string]interface{})["href"].(string) + ") " +
-		event.Comment.Author.DisplayName + " wrote: " + event.Comment.Text
-
-	// Add title and body previously populated to the embed and return it
-	embedObject.SetTitle(title).SetDescription(body)
-	return embedObject.MessageEmbed
-}
-
 // PullRequestApproved returns the approved pull request
 func PullRequestApproved(event bitbucketserver.PullRequestReviewerApprovedPayload) *discordgo.MessageEmbed {
 	// Create an empty embed with a predefined color
@@ -195,7 +180,7 @@ func GetMyPullRequests(api *API, rid string) *discordgo.MessageEmbed {
 				i := 0
 				for _, values := range request.Values {
 					if values.Author.User.Name == username {
-						body = body + strconv.Itoa(i+1) + ". [" + values.Title + "](" + values.Links.Self[0].Href + ")\n"
+						body = body + strconv.Itoa(i+1) + ". [" + values.Title + "](" + values.Links.Self[0].Href + ")\n Reviewers:\n"
 						for j, reviewer := range values.Reviewers {
 							body = body + strconv.Itoa(j+1) + ". [" + reviewer.User.DisplayName + "](" + reviewer.User.Links.Self[0].Href + ") "
 							userid, present := cfg[reviewer.User.Name]

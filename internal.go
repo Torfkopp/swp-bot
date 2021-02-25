@@ -102,9 +102,6 @@ func ReceiveBitbucketWebhook(session *discordgo.Session) {
 		case bitbucketserver.PullRequestMergedPayload:
 			event := payload.(bitbucketserver.PullRequestMergedPayload)
 			_, err = session.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], PullRequestMerged(event))
-		case bitbucketserver.PullRequestCommentAddedPayload:
-			event := payload.(bitbucketserver.PullRequestCommentAddedPayload)
-			_, err = session.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], NewComment(event))
 		case bitbucketserver.PullRequestReviewerApprovedPayload:
 			event := payload.(bitbucketserver.PullRequestReviewerApprovedPayload)
 			_, err = session.ChannelMessageSendEmbed(cfg["PING_CHANNEL"], PullRequestApproved(event))
