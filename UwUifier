@@ -1,0 +1,205 @@
+package main
+
+import (
+	"math/rand"
+	"strings"
+)
+
+//UwU? What is dis?
+//An UwUifiew by Mawio
+func UwUifier(String string) string {
+	UwU := String
+
+	UwU = uwuifyWords(UwU)
+	UwU = uwuifyExclamations(UwU)
+	UwU = uwuifySpaces(UwU)
+
+	return UwU
+}
+
+//uwuify evewy wowd
+func uwuifyWords(String string) string {
+
+	words := strings.Split(String, " ")
+
+	for i := 0; i < len(words); i++ {
+		//t + h bad
+		if string(words[i][0])+string(words[i][1]) == "th" {
+			strings.Replace(words[i], "th", "d", 1)
+		}
+		if string(words[i][0])+string(words[i][1]) == "Th" {
+			strings.Replace(words[i], "Th", "D", 1)
+		}
+		if string(words[i][0])+string(words[i][1]) == "TH" {
+			strings.Replace(words[i], "TH", "D", 1)
+		}
+	}
+
+	String = strings.Join(words, " ")
+
+	//smaww Wettews
+	strings.ReplaceAll(String, "r", "w")
+	strings.ReplaceAll(String, "l", "w")
+	strings.ReplaceAll(String, "na", "nya")
+	strings.ReplaceAll(String, "ne", "nye")
+	strings.ReplaceAll(String, "ni", "nyi")
+	strings.ReplaceAll(String, "no", "nyo")
+	strings.ReplaceAll(String, "nu", "nyu")
+	strings.ReplaceAll(String, "ma", "mya")
+	strings.ReplaceAll(String, "me", "mye")
+	strings.ReplaceAll(String, "mi", "myi")
+	strings.ReplaceAll(String, "mo", "myo")
+	strings.ReplaceAll(String, "mu", "myu")
+	strings.ReplaceAll(String, "ove", "uv")
+
+	//BIG WETTEWS
+	strings.ReplaceAll(String, "R", "W")
+	strings.ReplaceAll(String, "L", "W")
+	strings.ReplaceAll(String, "Na", "Nya")
+	strings.ReplaceAll(String, "NA", "NYA")
+	strings.ReplaceAll(String, "Ne", "Nye")
+	strings.ReplaceAll(String, "NE", "NYE")
+	strings.ReplaceAll(String, "Ni", "Nyi")
+	strings.ReplaceAll(String, "NI", "NYI")
+	strings.ReplaceAll(String, "No", "Nyo")
+	strings.ReplaceAll(String, "NO", "NYO")
+	strings.ReplaceAll(String, "Nu", "Nyu")
+	strings.ReplaceAll(String, "NU", "NYU")
+	strings.ReplaceAll(String, "Ma", "Mya")
+	strings.ReplaceAll(String, "MA", "MYA")
+	strings.ReplaceAll(String, "Me", "Mye")
+	strings.ReplaceAll(String, "ME", "MYE")
+	strings.ReplaceAll(String, "Mi", "Myi")
+	strings.ReplaceAll(String, "MI", "MYI")
+	strings.ReplaceAll(String, "Mo", "Myo")
+	strings.ReplaceAll(String, "MO", "MYO")
+	strings.ReplaceAll(String, "Mu", "Myu")
+	strings.ReplaceAll(String, "MU", "MYU")
+	strings.ReplaceAll(String, "OVE", "UV")
+	strings.ReplaceAll(String, "th", "ff")
+	strings.ReplaceAll(String, "TH", "FF")
+
+	//If yowouwu awe hawdcowowe enowouwugh
+	//strings.ReplaceAll(String, "u", "uwu")
+	//strings.ReplaceAll(String, "U", "UwU")
+	//strings.ReplaceAll(String, "o", "owo")
+	//strings.ReplaceAll(String, "O", "OwO")
+
+	//speciaws
+	strings.ReplaceAll(String, " nyo ", " nyo UnU ")
+	strings.ReplaceAll(String, " NYO ", " NYO UnU ")
+	strings.ReplaceAll(String, " nyot ", " nyot UnU ")
+	strings.ReplaceAll(String, " NYOT ", " NYOT UnU ")
+	strings.ReplaceAll(String, "n't ", " nyot UnU ")
+	strings.ReplaceAll(String, "N'T ", " NYOT UnU ")
+	strings.ReplaceAll(String, "nya ", "nya~ ")
+	strings.ReplaceAll(String, "NYA ", "NYA~ ")
+
+	return String
+}
+
+//uwuify ffe excwamation mawks
+func uwuifyExclamations(String string) string {
+	excl := strings.Split(String, "!")
+	for i := 0; i < len(excl); i++ {
+		randE := rand.Intn(6)
+		switch randE {
+		case 0:
+			strings.ReplaceAll(excl[i], "!", "!?")
+		case 1:
+			strings.ReplaceAll(excl[i], "!", "?!!")
+		case 2:
+			strings.ReplaceAll(excl[i], "!", "?!?1")
+		case 3:
+			strings.ReplaceAll(excl[i], "!", "!!11")
+		case 4:
+			strings.ReplaceAll(excl[i], "!", "?!?!")
+		case 5:
+			strings.ReplaceAll(excl[i], "!", "!!?!!")
+		}
+	}
+
+	return strings.Join(excl, " ")
+}
+
+//uwuify wiff wandom faces/ actions/ stuttews between ffe wowds
+func uwuifySpaces(String string) string {
+	//Numbers in percent
+	faces := 5
+	actions := 10
+	stutters := 30
+
+	words := strings.Split(String, " ")
+
+	for i := 0; i < len(words); i++ {
+		random := rand.Intn(101)
+		if 0 <= random && random <= faces {
+			//Add random face before the word
+			randF := rand.Intn(10)
+			switch randF {
+			case 0:
+				words[i] += "(・`ω´・)"
+			case 1:
+				words[i] += ";;w;;"
+			case 2:
+				words[i] += "OwO"
+			case 3:
+				words[i] += "UwU"
+			case 4:
+				words[i] += ">w<"
+			case 5:
+				words[i] += "^w^"
+			case 6:
+				words[i] += "ÚwÚ"
+			case 7:
+				words[i] += "^-^"
+			case 8:
+				words[i] += ":3"
+			case 9:
+				words[i] += "x3"
+			}
+		} else if faces < random && random <= actions {
+			//Add random action before the word
+			randA := rand.Intn(15)
+			switch randA {
+			case 0:
+				words[i] += " *blushes*"
+			case 1:
+				words[i] += " *whispers to self*"
+			case 2:
+				words[i] += " *cries*"
+			case 3:
+				words[i] += " *screams*"
+			case 4:
+				words[i] += " *sweats*"
+			case 5:
+				words[i] += " *twerks*"
+			case 6:
+				words[i] += " *runs away*"
+			case 7:
+				words[i] += " *screeches*"
+			case 8:
+				words[i] += " *walks away*"
+			case 9:
+				words[i] += " *sees bulge*"
+			case 10:
+				words[i] += " *looks at you*"
+			case 11:
+				words[i] += " *notices buldge*"
+			case 12:
+				words[i] += " *starts twerking*"
+			case 13:
+				words[i] += " *huggles tightly*"
+			case 14:
+				words[i] += " *boops your nose*"
+			}
+
+		} else if actions < random && random <= stutters {
+			//Add stutter with a length between 0 and 2
+			randS := rand.Intn(3)
+			words[i] = strings.Repeat(string(words[i][0])+"-", randS) + words[i]
+		}
+	}
+
+	return strings.Join(words, " ")
+}
