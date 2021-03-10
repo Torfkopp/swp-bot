@@ -65,19 +65,22 @@ func MessageCreate(bitbucketAPI1 *API, bitbucketAPI2 *API, jiraAPI1 *API) func(s
 		if strings.HasPrefix(message.Content, "!post ") {
 			_, err = session.ChannelMessageSend(cfg["RELAY_CHANNEL"], PostMessage(message.Content))
 		}
+		if strings.HasPrefix(message.Content, "!uwu ") {
+			_, err = session.ChannelMessageSend(cfg["RELAY_CHANNEL"], PostUwUMessage(message.Content))
+		}
 		// This part is just for shits and giggles
 		if message.Author.ID == cfg["VIP"] {
 			switch message.Content {
 			case "!help":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, HelpMessageVIP())
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, HelpMessage(true))
 			case "!allpullrequests":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetAllPullRequestsVIP(bitbucketAPI1))
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetAllPullRequests(bitbucketAPI1, true))
 			case "!mypullrequests":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyPullRequestsVIP(bitbucketAPI1, message.Author.ID))
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyPullRequests(bitbucketAPI1, message.Author.ID, true))
 			case "!myreviews":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyReviewsVIP(bitbucketAPI1, message.Author.ID))
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyReviews(bitbucketAPI1, message.Author.ID, true))
 			case "!about":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, AboutMessageVIP())
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, AboutMessage(true))
 			default:
 				return
 			}
@@ -85,17 +88,17 @@ func MessageCreate(bitbucketAPI1 *API, bitbucketAPI2 *API, jiraAPI1 *API) func(s
 			// This part is the more serious portion of code here
 			switch message.Content {
 			case "!help":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, HelpMessage())
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, HelpMessage(false))
 			case "!allpullrequests":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetAllPullRequests(bitbucketAPI1))
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetAllPullRequests(bitbucketAPI1, false))
 			case "!mypullrequests":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyPullRequests(bitbucketAPI1, message.Author.ID))
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyPullRequests(bitbucketAPI1, message.Author.ID, false))
 			case "!myreviews":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyReviews(bitbucketAPI1, message.Author.ID))
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetMyReviews(bitbucketAPI1, message.Author.ID, false))
 			//case "!sprint":
-			//	_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetActiveSprintMessage(jiraAPI1))
+			//	_, err = session.ChannelMessageSendEmbed(message.ChannelID, GetActiveSprintMessage(jiraAPI1, false))
 			case "!about":
-				_, err = session.ChannelMessageSendEmbed(message.ChannelID, AboutMessage())
+				_, err = session.ChannelMessageSendEmbed(message.ChannelID, AboutMessage(false))
 			default:
 				return
 			}
