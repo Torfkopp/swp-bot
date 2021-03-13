@@ -21,10 +21,10 @@ func SessionCreate(token string) *discordgo.Session {
 }
 
 // StartBot adds event handlers and starts the main bot function
-func StartBot(bot *discordgo.Session, bitbucketAPI1 *API, bitbucketAPI2 *API, jiraAPI1 *API) {
+func StartBot(bot *discordgo.Session, bitbucketAPI1 *API, jiraAPI1 *API) {
 	// Register events
 	bot.AddHandler(Ready)
-	bot.AddHandler(MessageCreate(bitbucketAPI1, bitbucketAPI2, jiraAPI1))
+	bot.AddHandler(MessageCreate(bitbucketAPI1, jiraAPI1))
 
 	// Create connection to bot
 	err := bot.Open()
@@ -58,7 +58,7 @@ func Ready(session *discordgo.Session, _ *discordgo.Ready) {
 }
 
 // MessageCreate is called upon a received message and conditionally answers it
-func MessageCreate(bitbucketAPI1 *API, bitbucketAPI2 *API, jiraAPI1 *API) func(session *discordgo.Session, message *discordgo.MessageCreate) {
+func MessageCreate(bitbucketAPI1 *API, jiraAPI1 *API) func(session *discordgo.Session, message *discordgo.MessageCreate) {
 	// We need to return a function here so we can pass over the api object
 	return func(session *discordgo.Session, message *discordgo.MessageCreate) {
 		var err error

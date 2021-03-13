@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Define the color used in the embeds
@@ -54,6 +55,36 @@ func PostMessage(message string) string {
 // PostUwUMessage does the same as PostMessage but cursed
 func PostUwUMessage(message string) string {
 	return UwUify(strings.TrimPrefix(message, "!uwu "))
+}
+
+func ReviewTimer(session *discordgo.Session, event bitbucketserver.PullRequestOpenedPayload) {
+	time.After(48 * time.Hour)
+	endpoint := cfg["BITBUCKET_URL_2"] + strconv.FormatUint(event.PullRequest.ID, 10)
+	api, err := NewAPI(endpoint, cfg["BITBUCKET_TOKEN"], 1)
+	if err != nil {
+		log.Println(err)
+	}
+	request, err := api.GetPullRequests()
+	if err == nil {
+		if request.Values[0].Open {
+			var body string
+			for _, reviewer := range request.Values[0].Reviewers {
+				if !reviewer.Approved {
+					body += "[" + reviewer.User.DisplayName + "](" + reviewer.User.Links.Self[0].Href + ")"
+					userid, present := cfg[reviewer.User.Name]
+					if present {
+						body += " <@" + userid + ">\n"
+					} else {
+						body += "\n"
+					}
+				}
+			}
+			_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], "")
+			_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], body)
+		}
+	} else {
+		log.Println(err)
+	}
 }
 
 // NewPullRequestCreated returns the latest pull request

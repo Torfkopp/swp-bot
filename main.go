@@ -29,7 +29,6 @@ func main() {
 
 	// Create API access first
 	bitbucketAPI1, err := NewAPI(cfg["BITBUCKET_URL_1"], cfg["BITBUCKET_TOKEN"], 1)
-	bitbucketAPI2, err := NewAPI(cfg["BITBUCKET_URL_2"], cfg["BITBUCKET_TOKEN"], 1)
 	jiraAPI1, err := NewAPI(cfg["JIRA_URL_1"], cfg["JIRA_TOKEN"], 2)
 	if err != nil {
 		log.Fatal(err)
@@ -37,5 +36,5 @@ func main() {
 
 	// Create BOT and start it
 	bot := SessionCreate(cfg["DISCORD_TOKEN"])
-	StartBot(bot, bitbucketAPI1, bitbucketAPI2, jiraAPI1)
+	StartBot(bot, bitbucketAPI1, jiraAPI1)
 }
