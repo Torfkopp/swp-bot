@@ -58,7 +58,7 @@ func PostUwUMessage(message string) string {
 }
 
 func ReviewTimer(session *discordgo.Session, event bitbucketserver.PullRequestOpenedPayload) {
-	time.After(48 * time.Hour)
+	time.Sleep(48 * time.Hour)
 	endpoint := cfg["BITBUCKET_URL_2"] + strconv.FormatUint(event.PullRequest.ID, 10)
 	api, err := NewAPI(endpoint, cfg["BITBUCKET_TOKEN"], 1)
 	if err != nil {
@@ -79,7 +79,7 @@ func ReviewTimer(session *discordgo.Session, event bitbucketserver.PullRequestOp
 					}
 				}
 			}
-			_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], "")
+			_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], "Where Review?")
 			_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], body)
 		}
 	} else {
