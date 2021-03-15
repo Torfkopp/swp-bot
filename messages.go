@@ -4,6 +4,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	bitbucketserver "github.com/go-playground/webhooks/bitbucket-server"
 	"log"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -69,7 +70,7 @@ func ReviewTimer(session *discordgo.Session, event bitbucketserver.PullRequestOp
 		if request.Values[0].Open {
 			var body string
 			for _, reviewer := range request.Values[0].Reviewers {
-				if !reviewer.Approved {
+				if reviewer.Status == "UNAPPROVED" {
 					body += "[" + reviewer.User.DisplayName + "](" + reviewer.User.Links.Self[0].Href + ")"
 					userid, present := cfg[reviewer.User.Name]
 					if present {
@@ -79,7 +80,19 @@ func ReviewTimer(session *discordgo.Session, event bitbucketserver.PullRequestOp
 					}
 				}
 			}
-			_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], "Where Review?")
+			r := rand.Intn(100)
+			switch {
+			case r <= 1:
+				_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], "https://media.discordapp.net/attachments/804343772695363624/821001536050167818/bananacover.png")
+			case r > 1 && r <= 25:
+				_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], "https://tenor.com/view/mai-nichijou-rain-glasses-gif-4749199")
+			case r > 25 && r <= 50:
+				_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], "https://tenor.com/view/nichijou-ona2000-anime-raining-rain-gif-13273260")
+			case r > 50 && r <= 75:
+				_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], "https://tenor.com/view/nichijou-yuuko-rain-gif-4749145")
+			case r > 75:
+				_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], "https://tenor.com/view/nichijou-rain-disappointed-anime-gif-9762544")
+			}
 			_, err = session.ChannelMessageSend(cfg["PING_CHANNEL"], body)
 		}
 	} else {

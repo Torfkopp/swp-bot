@@ -159,11 +159,11 @@ func UwUify(message string) string {
 // uwuify evewy wowd
 func UwuifyWords(message string) string {
 
-	words := strings.Split(message, " ")
+	words := strings.SplitAfter(message, " ")
 
 	for i := 0; i < len(words); i++ {
 		// t + h bad
-		if len(words[i]) > 1 {
+		if len(words[i]) > 2 {
 			if string(words[i][0])+string(words[i][1]) == "th" {
 				words[i] = strings.Replace(words[i], "th", "d", 1)
 			}
@@ -174,69 +174,69 @@ func UwuifyWords(message string) string {
 				words[i] = strings.Replace(words[i], "TH", "D", 1)
 			}
 		}
+
+		if !strings.ContainsAny(words[i], "(") {
+			// smaww wettews
+			words[i] = strings.ReplaceAll(words[i], "r", "w")
+			words[i] = strings.ReplaceAll(words[i], "l", "w")
+			words[i] = strings.ReplaceAll(words[i], "na", "nya")
+			words[i] = strings.ReplaceAll(words[i], "ne", "nye")
+			words[i] = strings.ReplaceAll(words[i], "ni", "nyi")
+			words[i] = strings.ReplaceAll(words[i], "no", "nyo")
+			words[i] = strings.ReplaceAll(words[i], "nu", "nyu")
+			words[i] = strings.ReplaceAll(words[i], "ma", "mya")
+			words[i] = strings.ReplaceAll(words[i], "me", "mye")
+			words[i] = strings.ReplaceAll(words[i], "mi", "myi")
+			words[i] = strings.ReplaceAll(words[i], "mo", "myo")
+			words[i] = strings.ReplaceAll(words[i], "mu", "myu")
+			words[i] = strings.ReplaceAll(words[i], "ove", "uv")
+
+			//BIG WETTEWS
+			words[i] = strings.ReplaceAll(words[i], "R", "W")
+			words[i] = strings.ReplaceAll(words[i], "L", "W")
+			words[i] = strings.ReplaceAll(words[i], "Na", "Nya")
+			words[i] = strings.ReplaceAll(words[i], "NA", "NYA")
+			words[i] = strings.ReplaceAll(words[i], "Ne", "Nye")
+			words[i] = strings.ReplaceAll(words[i], "NE", "NYE")
+			words[i] = strings.ReplaceAll(words[i], "Ni", "Nyi")
+			words[i] = strings.ReplaceAll(words[i], "NI", "NYI")
+			words[i] = strings.ReplaceAll(words[i], "No", "Nyo")
+			words[i] = strings.ReplaceAll(words[i], "NO", "NYO")
+			words[i] = strings.ReplaceAll(words[i], "Nu", "Nyu")
+			words[i] = strings.ReplaceAll(words[i], "NU", "NYU")
+			words[i] = strings.ReplaceAll(words[i], "Ma", "Mya")
+			words[i] = strings.ReplaceAll(words[i], "MA", "MYA")
+			words[i] = strings.ReplaceAll(words[i], "Me", "Mye")
+			words[i] = strings.ReplaceAll(words[i], "ME", "MYE")
+			words[i] = strings.ReplaceAll(words[i], "Mi", "Myi")
+			words[i] = strings.ReplaceAll(words[i], "MI", "MYI")
+			words[i] = strings.ReplaceAll(words[i], "Mo", "Myo")
+			words[i] = strings.ReplaceAll(words[i], "MO", "MYO")
+			words[i] = strings.ReplaceAll(words[i], "Mu", "Myu")
+			words[i] = strings.ReplaceAll(words[i], "MU", "MYU")
+			words[i] = strings.ReplaceAll(words[i], "OVE", "UV")
+			words[i] = strings.ReplaceAll(words[i], "th", "ff")
+			words[i] = strings.ReplaceAll(words[i], "TH", "FF")
+
+			// If yowouwu awe hawdcowowe enowouwugh
+			//words[i] = strings.ReplaceAll(words[i], "u", "uwu")
+			//words[i] = strings.ReplaceAll(words[i], "U", "UwU")
+			//words[i] = strings.ReplaceAll(words[i], "o", "owo")
+			//words[i] = strings.ReplaceAll(words[i], "O", "OwO")
+
+			// speciaws
+			words[i] = strings.ReplaceAll(words[i], " nyo ", " nyo UnU ")
+			words[i] = strings.ReplaceAll(words[i], " NYO ", " NYO UnU ")
+			words[i] = strings.ReplaceAll(words[i], " nyot ", " nyot UnU ")
+			words[i] = strings.ReplaceAll(words[i], " NYOT ", " NYOT UnU ")
+			words[i] = strings.ReplaceAll(words[i], "n't ", "nyot UnU ")
+			words[i] = strings.ReplaceAll(words[i], "N'T ", "NYOT UnU ")
+			words[i] = strings.ReplaceAll(words[i], "nya ", "nya~ ")
+			words[i] = strings.ReplaceAll(words[i], "NYA ", "NYA~ ")
+		}
 	}
 
-	message = strings.Join(words, " ")
-
-	// smaww wettews
-	message = strings.ReplaceAll(message, "r", "w")
-	message = strings.ReplaceAll(message, "l", "w")
-	message = strings.ReplaceAll(message, "na", "nya")
-	message = strings.ReplaceAll(message, "ne", "nye")
-	message = strings.ReplaceAll(message, "ni", "nyi")
-	message = strings.ReplaceAll(message, "no", "nyo")
-	message = strings.ReplaceAll(message, "nu", "nyu")
-	message = strings.ReplaceAll(message, "ma", "mya")
-	message = strings.ReplaceAll(message, "me", "mye")
-	message = strings.ReplaceAll(message, "mi", "myi")
-	message = strings.ReplaceAll(message, "mo", "myo")
-	message = strings.ReplaceAll(message, "mu", "myu")
-	message = strings.ReplaceAll(message, "ove", "uv")
-
-	//BIG WETTEWS
-	message = strings.ReplaceAll(message, "R", "W")
-	message = strings.ReplaceAll(message, "L", "W")
-	message = strings.ReplaceAll(message, "Na", "Nya")
-	message = strings.ReplaceAll(message, "NA", "NYA")
-	message = strings.ReplaceAll(message, "Ne", "Nye")
-	message = strings.ReplaceAll(message, "NE", "NYE")
-	message = strings.ReplaceAll(message, "Ni", "Nyi")
-	message = strings.ReplaceAll(message, "NI", "NYI")
-	message = strings.ReplaceAll(message, "No", "Nyo")
-	message = strings.ReplaceAll(message, "NO", "NYO")
-	message = strings.ReplaceAll(message, "Nu", "Nyu")
-	message = strings.ReplaceAll(message, "NU", "NYU")
-	message = strings.ReplaceAll(message, "Ma", "Mya")
-	message = strings.ReplaceAll(message, "MA", "MYA")
-	message = strings.ReplaceAll(message, "Me", "Mye")
-	message = strings.ReplaceAll(message, "ME", "MYE")
-	message = strings.ReplaceAll(message, "Mi", "Myi")
-	message = strings.ReplaceAll(message, "MI", "MYI")
-	message = strings.ReplaceAll(message, "Mo", "Myo")
-	message = strings.ReplaceAll(message, "MO", "MYO")
-	message = strings.ReplaceAll(message, "Mu", "Myu")
-	message = strings.ReplaceAll(message, "MU", "MYU")
-	message = strings.ReplaceAll(message, "OVE", "UV")
-	message = strings.ReplaceAll(message, "th", "ff")
-	message = strings.ReplaceAll(message, "TH", "FF")
-
-	// If yowouwu awe hawdcowowe enowouwugh
-	//message = strings.ReplaceAll(message, "u", "uwu")
-	//message = strings.ReplaceAll(message, "U", "UwU")
-	//message = strings.ReplaceAll(message, "o", "owo")
-	//message = strings.ReplaceAll(message, "O", "OwO")
-
-	// speciaws
-	message = strings.ReplaceAll(message, " nyo ", " nyo UnU ")
-	message = strings.ReplaceAll(message, " NYO ", " NYO UnU ")
-	message = strings.ReplaceAll(message, " nyot ", " nyot UnU ")
-	message = strings.ReplaceAll(message, " NYOT ", " NYOT UnU ")
-	message = strings.ReplaceAll(message, "n't ", "nyot UnU ")
-	message = strings.ReplaceAll(message, "N'T ", "NYOT UnU ")
-	message = strings.ReplaceAll(message, "nya ", "nya~ ")
-	message = strings.ReplaceAll(message, "NYA ", "NYA~ ")
-
-	return message
+	return strings.Join(words, " ")
 }
 
 // uwuify ffe excwamation mawks
@@ -280,25 +280,25 @@ func UwuifySpaces(message string) string {
 			randF := rand.Intn(10)
 			switch randF {
 			case 0:
-				words[i] += "(・`ω´・)"
+				words[i] += " (・`ω´・)"
 			case 1:
-				words[i] += ";;w;;"
+				words[i] += " ;;w;;"
 			case 2:
-				words[i] += "OwO"
+				words[i] += " OwO"
 			case 3:
-				words[i] += "UwU"
+				words[i] += " UwU"
 			case 4:
-				words[i] += ">w<"
+				words[i] += " >w<"
 			case 5:
-				words[i] += "^w^"
+				words[i] += " ^w^"
 			case 6:
-				words[i] += "ÚwÚ"
+				words[i] += " ÚwÚ"
 			case 7:
-				words[i] += "^-^"
+				words[i] += " ^-^"
 			case 8:
-				words[i] += ":3"
+				words[i] += " :3"
 			case 9:
-				words[i] += "x3"
+				words[i] += " x3"
 			}
 		} else if faces < random && random <= actions {
 			//Add random action before the word
@@ -339,7 +339,7 @@ func UwuifySpaces(message string) string {
 		} else if actions < random && random <= stutters {
 			//Add stutter with a length between 0 and 2
 			randS := rand.Intn(3)
-			if words[i] != "" {
+			if words[i] != "" && !strings.ContainsAny(words[i], "<[\n") {
 				words[i] = strings.Repeat(string(words[i][0])+"-", randS) + words[i]
 			}
 		}

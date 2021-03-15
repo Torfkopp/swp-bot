@@ -45,8 +45,9 @@ type Author struct {
 
 // Reviewer defines reviewer information
 type Reviewer struct {
-	User     User `json:"user"`
-	Approved bool `json:"approved"`
+	User     User   `json:"user"`
+	Approved bool   `json:"approved"`
+	Status   string `json:"status"`
 }
 
 // User defines user information
