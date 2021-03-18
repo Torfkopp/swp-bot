@@ -51,7 +51,7 @@ func StartBot(bot *discordgo.Session, bitbucketAPI1 *API, jiraAPI1 *API) {
 
 // Ready is called upon a ready event and sets the bots status
 func Ready(session *discordgo.Session, _ *discordgo.Ready) {
-	err := session.UpdateStatus(0, "") // Add whatever game you want here
+	err := session.UpdateGameStatus(0, "") // Add whatever game you want here
 	if err != nil {
 		log.Fatal(err)
 	}

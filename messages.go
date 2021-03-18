@@ -60,18 +60,17 @@ func PostUwUMessage(message string) string {
 
 func ReviewTimer(session *discordgo.Session, event bitbucketserver.PullRequestOpenedPayload) {
 	time.Sleep(48 * time.Hour)
-	endpoint := cfg["BITBUCKET_URL_2"] + strconv.FormatUint(event.PullRequest.ID, 10)
-	api, err := NewAPI(endpoint, cfg["BITBUCKET_TOKEN"], 1)
+	api, err := NewAPI(cfg["BITBUCKET_URL_2"]+strconv.FormatUint(event.PullRequest.ID, 10), cfg["BITBUCKET_TOKEN"], 1)
 	if err != nil {
 		log.Println(err)
 	}
-	request, err := api.GetPullRequests()
+	request, err := api.GetPullRequest()
 	if err == nil {
-		if request.Values[0].Open {
+		if request.Open {
 			var body string
-			for _, reviewer := range request.Values[0].Reviewers {
+			for _, reviewer := range request.Reviewers {
 				if reviewer.Status == "UNAPPROVED" {
-					body += "[" + reviewer.User.DisplayName + "](" + reviewer.User.Links.Self[0].Href + ")"
+					body += reviewer.User.DisplayName
 					userid, present := cfg[reviewer.User.Name]
 					if present {
 						body += " <@" + userid + ">\n"

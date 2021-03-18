@@ -98,6 +98,31 @@ func (api *API) GetPullRequests() (*Response, error) {
 	return &parsed, nil
 }
 
+// GetPullRequest sends Bitbucket GET requests
+func (api *API) GetPullRequest() (*Values, error) {
+
+	// Craft a GET request here
+	request, err := http.NewRequest("GET", api.endPoint.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Send the request and save the response
+	response, err := api.Request(request)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse the response from json into structs
+	var parsed Values
+	err = json.Unmarshal(response, &parsed)
+	if err != nil {
+		return nil, err
+	}
+
+	return &parsed, nil
+}
+
 // This is considered WIP, don't use
 func (api *API) GetActiveSprint() (*Response, error) {
 
