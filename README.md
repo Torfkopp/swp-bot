@@ -1,3 +1,9 @@
+## !DISLCAIMER!
+This repo is no longer maintained. It was basically my first approach on Go and worked for
+the duration of the software project it was used in. There is no longer a use case for me
+and this code will likely not see any maintenance from anyone. But feel free to fork and 
+revive it in case this code looks useful to you.
+
 # swp-bot
 
 This is a Discord Bot which can interact with the REST API of Bitbucket and soon Jira.
